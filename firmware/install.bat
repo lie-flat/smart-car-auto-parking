@@ -1,0 +1,1 @@
+mklink /J %USERPROFILE%\Documents\Arduino\libraries\lie-flat "%~dp0"lie-flat
