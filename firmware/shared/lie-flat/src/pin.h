@@ -15,3 +15,7 @@ const int key2 = 34;
 // Motor
 const int motorA = 26;
 const int motorB = 27;
+
+// MPU
+const int mpuSDA = 16;
+const int mpuSCL = 17;
