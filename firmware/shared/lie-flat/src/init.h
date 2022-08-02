@@ -40,7 +40,8 @@ inline __attribute__((always_inline)) void init_mpu(Adafruit_MPU6050& mpu,
                                                     int scl) {
   Wire.setPins(sda, scl);
   while (!mpu.begin()) {
-    Serial.println("ERROR: could not connect to a valid MPU6050 sensor! Retrying...");
+    Serial.println(
+        "ERROR: could not connect to a valid MPU6050 sensor! Retrying...");
     delay(500);
   }
   Serial.println("INFO: MPU6050 sensor ready!");
@@ -62,23 +63,17 @@ inline __attribute__((always_inline)) void init_wifi() {
 #ifdef LIE_FLAT_WIFI_STA
   WiFi.mode(WIFI_STA);  // station mode
   WiFi.begin(SSID, PASSWORD);
-#elif defined LIE_FLAT_WIFI_AP
-  WiFi.mode(WIFI_AP);  // AP/STA mode
-  WiFi.softAP(AP_SSID, AP_PASSWORD);
-#else
-#error "Please define LIE_FLAT_WIFI_STA or LIE_FLAT_WIFI_AP"
-#endif
-
   while (WiFi.waitForConnectResult() != WL_CONNECTED) {
     Serial.println(
-        "ERROR: Failed to connect to WiFi!\nPlease check your ssid and "
-        "password in include/config.h!");
+        "ERROR: Failed to connect to WiFi!\nRetrying...");
+    Serial.print
     delay(500);
   }
-#ifdef LIE_FLAT_WIFI_STA
   Serial.print("INFO: Connected to WiFi! My IP Address is ");
   Serial.println(WiFi.localIP());
 #elif defined LIE_FLAT_WIFI_AP
+  WiFi.mode(WIFI_AP);  // AP/STA mode
+  WiFi.softAP(AP_SSID, AP_PASSWORD);
   Serial.print("INFO: WiFi AP started! My IP Address is ");
   Serial.println(WiFi.softAPIP());
 #else
