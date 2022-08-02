@@ -66,7 +66,6 @@ inline __attribute__((always_inline)) void init_wifi() {
   while (WiFi.waitForConnectResult() != WL_CONNECTED) {
     Serial.println(
         "ERROR: Failed to connect to WiFi!\nRetrying...");
-    Serial.print
     delay(500);
   }
   Serial.print("INFO: Connected to WiFi! My IP Address is ");
