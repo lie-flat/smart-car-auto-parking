@@ -19,3 +19,6 @@ const int motorB = 27;
 // MPU
 const int mpuSDA = 16;
 const int mpuSCL = 17;
+
+// Optocoupler
+const int optocoupler = 14;
