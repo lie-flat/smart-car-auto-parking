@@ -22,3 +22,6 @@ const int mpuSCL = 17;
 
 // Optocoupler
 const int optocoupler = 14;
+
+// Buzzer
+const int buzzer = 25;
