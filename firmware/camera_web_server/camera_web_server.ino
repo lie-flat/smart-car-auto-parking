@@ -7,34 +7,28 @@
 //            Partial images will be transmitted if image exceeds buffer size
 //
 //            You must select partition scheme from the board menu that has at least 3MB APP space.
-//            Face Recognition is DISABLED for ESP32 and ESP32-S2, because it takes up from 15 
+//            Face Recognition is DISABLED for ESP32 and ESP32-S2, because it takes up from 15
 //            seconds to process single frame. Face Detection is ENABLED if PSRAM is enabled as well
 
 // ===================
 // Select camera model
 // ===================
-//#define CAMERA_MODEL_WROVER_KIT // Has PSRAM
-//#define CAMERA_MODEL_ESP_EYE // Has PSRAM
-//#define CAMERA_MODEL_ESP32S3_EYE // Has PSRAM
-//#define CAMERA_MODEL_M5STACK_PSRAM // Has PSRAM
-//#define CAMERA_MODEL_M5STACK_V2_PSRAM // M5Camera version B Has PSRAM
-//#define CAMERA_MODEL_M5STACK_WIDE // Has PSRAM
-//#define CAMERA_MODEL_M5STACK_ESP32CAM // No PSRAM
-//#define CAMERA_MODEL_M5STACK_UNITCAM // No PSRAM
 #define CAMERA_MODEL_AI_THINKER // Has PSRAM
-//#define CAMERA_MODEL_TTGO_T_JOURNAL // No PSRAM
-// ** Espressif Internal Boards **
-//#define CAMERA_MODEL_ESP32_CAM_BOARD
-//#define CAMERA_MODEL_ESP32S2_CAM_BOARD
-//#define CAMERA_MODEL_ESP32S3_CAM_LCD
-
 #include "camera_pins.h"
+#include <AsyncUDP.h>
 
 // ===========================
 // Enter your WiFi credentials
 // ===========================
 const char* ssid = "**********";
 const char* password = "**********";
+const char* FRAME_HEADER = "lie-flat device discovery!";
+const char* FRAME_VERB = "Advertise";
+const char* FRAME_DEVICE_NAME = "esp32-cam";
+
+AsyncUDP udp;
+IPAddress addr;
+String frame;
 
 void startCameraServer();
 
@@ -70,11 +64,11 @@ void setup() {
   config.fb_location = CAMERA_FB_IN_PSRAM;
   config.jpeg_quality = 12;
   config.fb_count = 1;
-  
+
   // if PSRAM IC present, init with UXGA resolution and higher JPEG quality
   //                      for larger pre-allocated frame buffer.
-  if(config.pixel_format == PIXFORMAT_JPEG){
-    if(psramFound()){
+  if (config.pixel_format == PIXFORMAT_JPEG) {
+    if (psramFound()) {
       config.jpeg_quality = 10;
       config.fb_count = 2;
       config.grab_mode = CAMERA_GRAB_LATEST;
@@ -91,11 +85,6 @@ void setup() {
 #endif
   }
 
-#if defined(CAMERA_MODEL_ESP_EYE)
-  pinMode(13, INPUT_PULLUP);
-  pinMode(14, INPUT_PULLUP);
-#endif
-
   // camera init
   esp_err_t err = esp_camera_init(&config);
   if (err != ESP_OK) {
@@ -111,18 +100,9 @@ void setup() {
     s->set_saturation(s, -2); // lower the saturation
   }
   // drop down frame size for higher initial frame rate
-  if(config.pixel_format == PIXFORMAT_JPEG){
+  if (config.pixel_format == PIXFORMAT_JPEG) {
     s->set_framesize(s, FRAMESIZE_QVGA);
   }
-
-#if defined(CAMERA_MODEL_M5STACK_WIDE) || defined(CAMERA_MODEL_M5STACK_ESP32CAM)
-  s->set_vflip(s, 1);
-  s->set_hmirror(s, 1);
-#endif
-
-#if defined(CAMERA_MODEL_ESP32S3_EYE)
-  s->set_vflip(s, 1);
-#endif
 
   WiFi.begin(ssid, password);
   WiFi.setSleep(false);
@@ -133,15 +113,42 @@ void setup() {
   }
   Serial.println("");
   Serial.println("WiFi connected");
-
+  addr = WiFi.localIP();
   startCameraServer();
-
   Serial.print("Camera Ready! Use 'http://");
-  Serial.print(WiFi.localIP());
+  Serial.print(addr);
   Serial.println("' to connect");
+  if (udp.listen(1234)) {
+    Serial.println("INFO: UDP Server started!");
+    udp.onPacket([](AsyncUDPPacket packet) {
+      if (packet.length() > 512) {
+        Serial.println("WARN: Dropping extra large packet!");
+        return;
+      }
+      if (strncmp((char*)packet.data(), FRAME_HEADER, strlen(FRAME_HEADER)) != 0) {
+        Serial.println("WARN: Not a lie-flat frame");
+        return;
+      }
+      auto rframe = String(packet.data(), packet.length());
+      int sep1 = rframe.indexOf('\n');
+      if (sep1 < 0) return;
+      auto verb = rframe.substring(sep1+1);
+      if (verb != "ACK") return;
+      Serial.println("Closing UDP Server!");
+      udp.close();
+    });
+  } else {
+    Serial.println("Failed to initialize UDP server!");
+  }
 }
 
 void loop() {
-  // Do nothing. Everything is done in another task by the web server
-  delay(10000);
+  while (udp) {
+    if (frame.length() == 0) {
+      // Generate IP Discovery Frame
+      frame = String(FRAME_HEADER) + "\n" + FRAME_VERB + "\n" + addr.toString() + "\n" + FRAME_DEVICE_NAME;
+    }
+    delay(1000);
+    udp.broadcastTo(frame.c_str() , 1234);
+  }
 }
