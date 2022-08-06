@@ -36,6 +36,13 @@ def connect_to_board():
     return devices
 
 
+def read_sensors(ip):
+    response = requests.get("http://" + ip + "/read")
+    if response.status_code == 200:
+        return response.json()
+    return None
+
+
 if __name__ == '__main__':
     devices = connect_to_board()
     print(devices)
