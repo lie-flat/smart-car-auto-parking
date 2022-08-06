@@ -8,22 +8,14 @@ CAMERA_BUFFRER_SIZE = 4096
 class CameraReader:
     def __init__(self, ip) -> None:
         self.bts = b''
-        self.url = f"http://{ip}:81/stream"
-        self.stream = urlopen(self.url)
+        self.url = f"http://{ip}/capture"
 
     def read(self):
         while True:
             try:
-                self.bts += self.stream.read(CAMERA_BUFFRER_SIZE)
-                jpghead = self.bts.find(b'\xff\xd8')
-                jpgend = self.bts.find(b'\xff\xd9')
-                if jpghead > -1 and jpgend > -1:
-                    jpg = self.bts[jpghead:jpgend+2]
-                    self.bts = self.bts[jpgend+2:]
-                    return cv2.imdecode(np.frombuffer(
-                        jpg, dtype=np.uint8), cv2.IMREAD_UNCHANGED)
+                req = urlopen(self.url)
+                arr = np.asarray(bytearray(req.read()), dtype=np.uint8)
+                return cv2.imdecode(arr, -1)
             except Exception as e:
-                print("Error:" + str(e))
-                self.bts = b''
-                self.stream = urlopen(self.url)
+                print("Camera Read Error:" + str(e))
                 continue
