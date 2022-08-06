@@ -45,9 +45,9 @@ inline __attribute__((always_inline)) void init_mpu(Adafruit_MPU6050& mpu,
     delay(500);
   }
   Serial.println("INFO: MPU6050 sensor ready!");
-  mpu.setAccelerometerRange(MPU6050_RANGE_8_G);
+  mpu.setAccelerometerRange(MPU6050_RANGE_2_G);
   mpu.setGyroRange(MPU6050_RANGE_500_DEG);
-  mpu.setFilterBandwidth(MPU6050_BAND_5_HZ);
+  mpu.setFilterBandwidth(MPU6050_BAND_21_HZ);
 }
 
 inline __attribute__((always_inline)) void init_serial() {
