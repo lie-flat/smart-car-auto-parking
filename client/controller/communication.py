@@ -14,7 +14,6 @@ def connect_to_board():
                 response = requests.post(
                     "http://" + devices['board'] + "/init")
                 if response.status_code == 200:
-                    print("Board initialized!")
                     break
             except:
                 continue
