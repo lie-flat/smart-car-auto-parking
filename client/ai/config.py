@@ -1,4 +1,7 @@
 from os import path
 
-segModelDir = path.join(path.dirname(__file__), '..', '..', 'roadseg', 'models')
-paddleSegDir = path.join(path.dirname(__file__), 'PaddleSeg')
+fileDir = path.dirname(__file__)
+segModelDir = path.join(fileDir, '..', '..', 'roadseg', 'models')
+detModelDir = path.join(fileDir, '..', '..', 'signdet')
+paddleSegDir = path.join(fileDir, 'PaddleSeg')
+paddleDetDir = path.join(fileDir, 'PaddleDetection')
