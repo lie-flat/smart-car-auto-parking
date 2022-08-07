@@ -61,6 +61,11 @@ inline __attribute__((always_inline)) void init_serial() {
 
 inline __attribute__((always_inline)) void init_wifi() {
 #ifdef LIE_FLAT_WIFI_STA
+  Serial.print("INFO: WiFi config: ");
+  Serial.print("SSID: ");
+  Serial.print(SSID);
+  Serial.print(", PASS: ");
+  Serial.println(PASSWORD);
   WiFi.mode(WIFI_STA);  // station mode
   WiFi.begin(SSID, PASSWORD);
   while (WiFi.waitForConnectResult() != WL_CONNECTED) {
