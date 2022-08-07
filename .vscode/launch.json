@@ -13,6 +13,14 @@
             "cwd": "${workspaceFolder}/client",
         },
         {
+            "name": "client:ai.det",
+            "type": "python",
+            "request": "launch",
+            "module": "ai.det",
+            "justMyCode": true,
+            "cwd": "${workspaceFolder}/client",
+        },
+        {
             "name": "PaddleSeg:test",
             "type": "python",
             "request": "launch",
@@ -24,6 +32,20 @@
                 "${workspaceFolder}/roadseg/models/deploy.yaml",
                 "--image_path",
                 "${workspaceFolder}/2022-08-06-18-17-07.jpg",
+            ]
+        },
+        {
+            "name": "PaddleDet:test",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/client/ai/PaddleDetection/deploy/python/infer.py",
+            "justMyCode": true,
+            "cwd": "${workspaceFolder}",
+            "args": [
+                "--model_dir",
+                "${workspaceFolder}/signdet",
+                "--image_file",
+                "${workspaceFolder}/test.jpg",
             ]
         }
     ]
