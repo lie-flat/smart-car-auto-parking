@@ -1,0 +1,30 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "client:ai.seg",
+            "type": "python",
+            "request": "launch",
+            "module": "ai.seg",
+            "justMyCode": true,
+            "cwd": "${workspaceFolder}/client",
+        },
+        {
+            "name": "PaddleSeg:test",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/client/ai/PaddleSeg/deploy/python/infer.py",
+            "justMyCode": true,
+            "cwd": "${workspaceFolder}",
+            "args": [
+                "--config",
+                "${workspaceFolder}/roadseg/models/deploy.yaml",
+                "--image_path",
+                "${workspaceFolder}/2022-08-06-18-17-07.jpg",
+            ]
+        }
+    ]
+}
