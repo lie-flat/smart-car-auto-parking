@@ -16,18 +16,18 @@ def main():
     boardIP = devices['board']
     log.info(read_sensors(boardIP))
     reader = CameraReader(camIP)
-    control = partial(control, boardIP)
+    ctrl = partial(control, boardIP)
     while True:
         img = reader.read()
-        # cv2.imshow('img', img)
+        cv2.imshow('img', img)
         servo = random.uniform(2.5,12.5)
         lucky = random.random() > 0.5
         motorA = random.uniform(*((0,70) if lucky else (30,100)))
         motorB = random.uniform(*((30,100) if lucky else (0,70)))
         log.info(f"servo={servo},motor={motorA},{motorB}")
-        control(servo, motorA, motorB)
-        # if cv2.waitKey(1) & 0xFF == ord('q'):
-        #     break
+        ctrl(servo, motorA, motorB)
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
 
 if __name__ == "__main__":
     main()
