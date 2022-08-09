@@ -5,6 +5,7 @@ from logging import getLogger
 import cv2
 import random
 from functools import partial
+from ai import SegModel
 
 def main():
     log = getLogger("main")
@@ -15,11 +16,15 @@ def main():
     camIP = devices['esp32-cam']
     boardIP = devices['board']
     log.info(read_sensors(boardIP))
+
     reader = CameraReader(camIP)
     ctrl = partial(control, boardIP)
+    seg = SegModel()
     while True:
         img = reader.read()
+        colormap = seg.colormap(seg.predict(img))
         cv2.imshow('img', img)
+        cv2.imshow('colormap', colormap)
         servo = random.uniform(2.5,12.5)
         lucky = random.random() > 0.5
         motorA = random.uniform(*((0,70) if lucky else (30,100)))
