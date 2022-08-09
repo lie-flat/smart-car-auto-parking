@@ -2,3 +2,4 @@ requests
 paddlepaddle-gpu
 opencv-python
 numpy
+pyjoystick
