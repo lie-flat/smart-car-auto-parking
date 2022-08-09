@@ -1,9 +1,6 @@
 from pyjoystick.sdl2 import Key, Joystick, run_event_loop
 from controller import connect_to_board, read_sensors, control
-from camera import CameraReader
 import logging
-from functools import partial
-from ai import SegModel
 import time
 
 servo = 7.5
@@ -44,9 +41,9 @@ def key_received(key):
 
 
 if __name__ == '__main__':
-    log = logging.getLogger("main")
     logging.basicConfig(
         level=logging.INFO, format='%(asctime)s [%(name)s]%(levelname)s:%(message)s')
+    log = logging.getLogger("main")
     devices = connect_to_board()
     log.info(f"Found devices: {devices}")
     log.info(f"Reading sensors")
