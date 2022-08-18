@@ -27,6 +27,7 @@ def main():
     reader.set(cv2.CAP_PROP_FRAME_WIDTH, 480)
     reader.set(cv2.CAP_PROP_FRAME_HEIGHT, 320)
     ctrl = partial(control, boardIP)
+    ctrl(motorA=70)
     while True:
         result, img = reader.read()
         if not result:
@@ -44,10 +45,13 @@ def main():
 
         if theta > threshold:
             print("left")
+            ctrl(servo=3)
         if theta < -threshold:
             print("right")
+            ctrl(servo=12)
         if abs(theta) < threshold:
             print("straight")
+            ctrl(servo=7.5)
         theta = 0
         cv2.imshow('img', img)
         # servo = random.uniform(2.5, 12.5)
