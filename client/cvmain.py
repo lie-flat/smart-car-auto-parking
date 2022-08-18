@@ -6,8 +6,6 @@ import numpy as np
 from functools import partial
 
 from controller import connect_to_board, read_sensors, control
-from camera import CameraReader
-
 
 minLineLength = 5
 maxLineGap = 15
@@ -25,11 +23,14 @@ def main():
     camIP = devices['esp32-cam']
     boardIP = devices['board']
     log.info(read_sensors(boardIP))
-    reader = CameraReader(camIP)
+    reader = cv2.VideoCapture(0)
+    reader.set(cv2.CAP_PROP_FRAME_WIDTH, 480)
+    reader.set(cv2.CAP_PROP_FRAME_HEIGHT, 320)
     ctrl = partial(control, boardIP)
     while True:
-        img = reader.read()
-        
+        result, img = reader.read()
+        if not result:
+            continue
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         blurred = cv2.GaussianBlur(gray, (5, 5), 0)
         edged = cv2.Canny(blurred, 85, 85)
