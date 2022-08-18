@@ -46,8 +46,6 @@ if __name__ == '__main__':
     log = logging.getLogger("main")
     devices = connect_to_board()
     log.info(f"Found devices: {devices}")
-    log.info(f"Reading sensors")
     camIP = devices['esp32-cam']
     boardIP = devices['board']
-    log.info(read_sensors(boardIP))
     run_event_loop(print_add, print_remove, key_received)
