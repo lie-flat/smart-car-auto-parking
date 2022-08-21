@@ -9,7 +9,7 @@
             "type": "python",
             "request": "launch",
             "module": "ai.seg",
-            "justMyCode": true,
+            "justMyCode": false,
             "cwd": "${workspaceFolder}/client",
         },
         {
@@ -19,6 +19,30 @@
             "module": "ai.det",
             "justMyCode": true,
             "cwd": "${workspaceFolder}/client",
+        },
+        {
+            "name": "client:main",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/client/main.py",
+            "justMyCode": false,
+            "cwd": "${workspaceFolder}",
+        },
+        {
+            "name": "client:joystick",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/client/joystick.py",
+            "justMyCode": false,
+            "cwd": "${workspaceFolder}",
+        },
+        {
+            "name": "client:cvmain",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/client/cvmain.py",
+            "justMyCode": false,
+            "cwd": "${workspaceFolder}",
         },
         {
             "name": "PaddleSeg:test",
@@ -43,7 +67,7 @@
             "cwd": "${workspaceFolder}",
             "args": [
                 "--model_dir",
-                "${workspaceFolder}/signdet",
+                "${workspaceFolder}/roadsign",
                 "--image_file",
                 "${workspaceFolder}/test.jpg",
             ]
