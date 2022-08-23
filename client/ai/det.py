@@ -1,4 +1,3 @@
-
 import numpy as np
 from os import path
 from .config import detModelDir, paddleDetDir
@@ -7,7 +6,6 @@ import cv2
 
 sys.path.append(paddleDetDir)
 sys.path.append(path.join(paddleDetDir, 'deploy', 'python'))
-
 from infer import Detector, preprocess, Resize, NormalizeImage, Permute, PadStride, LetterBoxResize, WarpAffine, Pad
 
 class DetModel:
@@ -21,6 +19,10 @@ class DetModel:
         self.input_names = self.detector.predictor.get_input_names()
         self.output_names = self.detector.predictor.get_output_names()
 
+    @property
+    def labels(self):
+        return self.detector.pred_config.labels
+
     def predict(self, img):
         img, img_info = preprocess(img, self.preprocess_ops)
         inputs = {}
@@ -30,20 +32,28 @@ class DetModel:
         inputs['scale_factor'] = np.array(
             (img_info['scale_factor'], )).astype('float32')
         for i in range(len(self.input_names)):
-            input_tensor = self.detector.predictor.get_input_handle(self.input_names[i])
+            input_tensor = self.detector.predictor.get_input_handle(
+                self.input_names[i])
             input_tensor.reshape(inputs[self.input_names[i]].shape)
             input_tensor.copy_from_cpu(inputs[self.input_names[i]])
         self.detector.predictor.run()
-        boxes_tensor = self.detector.predictor.get_output_handle(self.output_names[0])
+        boxes_tensor = self.detector.predictor.get_output_handle(
+            self.output_names[0])
         np_boxes = boxes_tensor.copy_to_cpu()
-        boxes_num = self.detector.predictor.get_output_handle(self.output_names[1])
+        boxes_num = self.detector.predictor.get_output_handle(
+            self.output_names[1])
         np_boxes_num = boxes_num.copy_to_cpu()
-        result = dict(boxes=np_boxes, boxes_num=np_boxes_num)
+        # np_boxes: 13*[class, score, x_min, y_min, x_max, y_max]
+        result = [
+            {'class': self.labels[int(np_boxes[i][0])], 'score': float(np_boxes[i][1]), 'xmin': int(np_boxes[i][2]), 'ymin': int(
+                np_boxes[i][3]), 'xmax': int(np_boxes[i][4]), 'ymax': int(np_boxes[i][5])}
+            for i in range(np_boxes_num.item())
+        ]
         return result
 
 
 if __name__ == '__main__':
-    img = cv2.imread('../2022-08-06-18-17-42.jpg')
+    img = cv2.imread('../2022-08-06-18-17-55.jpg')
     det = DetModel()
-    result = det.predict('../test.jpg' )
+    result = det.predict(img)
     print(result)
