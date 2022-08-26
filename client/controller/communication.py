@@ -4,12 +4,19 @@ from os import path
 from socket import socket, AF_INET, SOCK_DGRAM
 FRAME_HEADER = "lie-flat device discovery!"
 
-CACHE_PATH = path.join(path.dirname(__file__), '..', '..', 'devices.cache.json')
+CACHE_PATH = path.join(path.dirname(__file__), '..',
+                       '..', 'devices.cache.json')
+
 
 def connect_to_board():
     if path.isfile(CACHE_PATH):
         with open(CACHE_PATH, 'r') as f:
-            return json.load(f)
+            devices = json.load(f)
+        response = requests.post(
+            "http://" + devices['board'] + "/init")
+        if response.status_code == 200:
+            return devices
+        raise Exception("Board not initialized!")
     s = socket(AF_INET, SOCK_DGRAM)
     s.bind(('', 1234))
     devices = dict()
