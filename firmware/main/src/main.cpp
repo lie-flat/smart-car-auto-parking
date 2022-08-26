@@ -1,20 +1,15 @@
 #include <Arduino.h>
 #include <ESPAsyncWebServer.h>
-#include <AsyncUDP.h>
 #include <constants.h>
 
 // Be sure to define the WiFi mode before include lie-flat.h
-#define LIE_FLAT_WIFI_STA
+#define LIE_FLAT_WIFI_AP
 #include <lie-flat.h>
 
 AsyncWebServer server(80);
 Adafruit_MPU6050 mpu;
-AsyncUDP udp;
 IPAddress camAddr;
 bool ready = false;
-
-#define FRAME_HEADER "lie-flat device discovery!"
-const char* FRAME_ACK = FRAME_HEADER "\nACK";
 
 void notFound(AsyncWebServerRequest* request) {
   request->send(404, "text/plain", "Not found");
@@ -62,12 +57,11 @@ void setup() {
   });
   server.on("/init", HTTP_POST, [](AsyncWebServerRequest* request) {
     if (ready) {
-      udp.close();
       request->send(200, "text/plain", "OK");
       Serial.println("INFO: Closing UDP server!");
       buzz(2000, 1500);
-    }
-    else request->send(425, "text/plain", "Too Early");
+    } else
+      request->send(425, "text/plain", "Too Early");
   });
   server.on("/cmd", HTTP_POST, [](AsyncWebServerRequest* request) {
     if (request->hasParam(SERVO_PARAM, true))
@@ -118,15 +112,4 @@ void setup() {
   ready = true;
 }
 
-void loop() {
-  // put your main code here, to run repeatedly:
-  // udp.println("Master!");
-  delay(1000);
-  if (ready) {
-    // broadcast device discovery frame
-    Serial.println("BROADCASTING");
-    auto frame = String(FRAME_HEADER) + "\n" + "Info\n" +
-                 WiFi.localIP().toString() + "=board\n" + camAddr.toString() + "=esp32-cam";
-    udp.broadcastTo(frame.c_str(), 1234);
-  }
-}
+void loop() {}
