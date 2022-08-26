@@ -1,2 +1,2 @@
-from .cvlib import initTrackbars, initGetLaneCurve
+from .cvlib import initTrackbars, initServoAnglePredictor
 from .utils import drawPoints, stackImages
