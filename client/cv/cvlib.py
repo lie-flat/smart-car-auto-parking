@@ -1,13 +1,13 @@
 import cv2
 import numpy as np
-from .utils import drawPoints, stackImages
+from .utils import drawPoints
 
 
 def initServoAnglePredictor(avgVal, coefficent, servoRange, debug=True):
     mid = (servoRange[0] + servoRange[1])/2
     curveList = []
 
-    def predictServoAngle(img, readTrackbars):
+    def predictServoAngle(img, points):
         imgCopy = img.copy()
         imgResult = img.copy()
         # STEP 1
@@ -15,9 +15,9 @@ def initServoAnglePredictor(avgVal, coefficent, servoRange, debug=True):
 
         # STEP 2
         hT, wT, c = img.shape
-        points = readTrackbars()
         imgWarp = warp(imgThres, points, wT, hT)
-        imgWarpPoints = drawPoints(imgCopy, points)
+        if debug:
+            imgWarpPoints = drawPoints(imgCopy, points)
 
         # STEP 3
         middlePoint, imgHist = getHistogram(
@@ -52,14 +52,11 @@ def initServoAnglePredictor(avgVal, coefficent, servoRange, debug=True):
                 w = wT // 20
                 cv2.line(imgResult, (w * x + int(curve // 50), midY - 10),
                          (w * x + int(curve // 50), midY + 10), (0, 0, 255), 2)
-            imgStacked = stackImages(1, ([img, imgWarpPoints, imgWarp],
-                                         [imgHist, imgLaneColor, imgResult]))
-            cv2.imshow('ImageStack', imgStacked)
 
         curve = curve/100
         servo = curve * coefficent
         servo = np.clip(servo+mid, servoRange[0], servoRange[1])
-        return servo
+        return servo, [imgWarpPoints, imgWarp, imgHist, imgResult] if debug else servo
     return predictServoAngle
 
 
