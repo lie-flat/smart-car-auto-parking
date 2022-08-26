@@ -20,10 +20,10 @@ def initServoAnglePredictor(avgVal, coefficent, servoRange, debug=True):
             imgWarpPoints = drawPoints(imgCopy, points)
 
         # STEP 3
-        middlePoint, imgHist = getHistogram(
-            imgWarp, display=True, minPer=0.5, region=4)
+        middlePoint = getHistogram(
+            imgWarp, minPer=0.5, region=4, debug=False)
         curveAveragePoint, imgHist = getHistogram(
-            imgWarp, display=True, minPer=0.9)
+            imgWarp, minPer=0.9, debug=debug)
         curveRaw = curveAveragePoint - middlePoint
 
         # SETP 4
@@ -117,7 +117,7 @@ def warp(img, points, w, h, inv=False):
     return imgWarp
 
 
-def getHistogram(img, minPer=0.1, display=False, region=1):
+def getHistogram(img, minPer=0.1, region=1, debug=True):
 
     if region == 1:
         histValues = np.sum(img, axis=0)
@@ -130,7 +130,7 @@ def getHistogram(img, minPer=0.1, display=False, region=1):
     indexArray = np.where(histValues >= minValue)
     basePoint = int(np.average(indexArray))
 
-    if display:
+    if debug:
         imgHist = np.zeros((img.shape[0], img.shape[1], 3), np.uint8)
         for x, intensity in enumerate(histValues):
             cv2.line(imgHist, (int(x), int(img.shape[0])), (int(x), int(
