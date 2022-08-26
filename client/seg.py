@@ -30,7 +30,7 @@ def main():
         motorA = random.uniform(*((0,70) if lucky else (30,100)))
         motorB = random.uniform(*((30,100) if lucky else (0,70)))
         log.info(f"servo={servo},motor={motorA},{motorB}")
-        ctrl(servo, motorA, motorB)
+        # ctrl(servo, motorA, motorB)
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
 
