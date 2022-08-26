@@ -5,7 +5,7 @@ from functools import partial
 from os import makedirs, path
 import cv2
 import numpy as np
-from cv import initTrackbars, initGetLaneCurve
+from cv import initTrackbars, initServoAnglePredictor
 from controller import connect_to_board, control
 import logging
 from camera import CameraReader, CVReader
@@ -15,7 +15,7 @@ CAMERA_HEIGHT = 240
 INITIAL_TRACKBAR_VALUES = [61, 200, 30, 240]
 MOTION = True
 
-getLaneCurve = initGetLaneCurve([], 10)
+predictServoAngle = initServoAnglePredictor(10, 5/0.3, (2.5, 12.5), True)
 
 
 def main(camera, width, height, initialTrackbarValues, ctrl):
@@ -28,9 +28,7 @@ def main(camera, width, height, initialTrackbarValues, ctrl):
         img = camera.read()
         cv2.imwrite(path.join(dataDir, f'{datetime.now().strftime("%H-%M-%S.%f")[:-3]}.jpg'), img)
         log.info("After reading")
-        curve = getLaneCurve(img, readTrackbars, display=2)
-        servo = 5 * curve/0.3
-        servo = np.clip(servo+7.5, 2.5, 12.5)
+        servo = predictServoAngle(img, readTrackbars())
         ctrl(servo=servo)
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
