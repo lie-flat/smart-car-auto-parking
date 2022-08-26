@@ -8,22 +8,18 @@ from functools import partial
 THRESHOLD = 0.5
 
 if __name__ == "__main__":
-    model = DetModel()
+    model = DetModel(THRESHOLD)
     devices = connect_to_board()
     buzz = partial(buzz_raw, devices['board'])
     # camera = CVReader(480, 320)
     camera = CameraReader(devices['esp32-cam'])
     while True:
         img = camera.read()
-        results = model.predict(img)
-        if len(results) == 0:
-            continue
-        # 通过 THRESHOLD 过滤 + 转成字典（去重）
-        detected = {result['class']: result
-                    for result in results if result['score'] > THRESHOLD}
+        detected = model.predict(img)
         for cat, result in detected.items():
             print(cat)
-            cv2.rectangle(img, (result['xmin'], result['ymin']), (result['xmax'], result['ymax']), (0,0,255), 2)
+            cv2.rectangle(img, (result['xmin'], result['ymin']),
+                          (result['xmax'], result['ymax']), (0, 0, 255), 2)
             if cat == 'warning':
                 buzz(2000, 500)
             elif cat == 'prohibitory':

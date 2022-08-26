@@ -1,15 +1,16 @@
 import numpy as np
 from os import path
-from .config import detModelDir, paddleDetDir
 import sys
 import cv2
+
+from .config import detModelDir, paddleDetDir
 
 sys.path.append(paddleDetDir)
 sys.path.append(path.join(paddleDetDir, 'deploy', 'python'))
 from infer import Detector, preprocess, Resize, NormalizeImage, Permute, PadStride, LetterBoxResize, WarpAffine, Pad
 
 class DetModel:
-    def __init__(self):
+    def __init__(self, threshold=0.5):
         self.detector = Detector(detModelDir, device='GPU')
         self.preprocess_ops = []
         for op_info in self.detector.pred_config.preprocess_infos:
@@ -18,6 +19,7 @@ class DetModel:
             self.preprocess_ops.append(eval(op_type)(**new_op_info))
         self.input_names = self.detector.predictor.get_input_names()
         self.output_names = self.detector.predictor.get_output_names()
+        self.threshold = threshold
 
     @property
     def labels(self):
@@ -43,13 +45,14 @@ class DetModel:
         boxes_num = self.detector.predictor.get_output_handle(
             self.output_names[1])
         np_boxes_num = boxes_num.copy_to_cpu()
-        # np_boxes: 13*[class, score, x_min, y_min, x_max, y_max]
-        result = [
+        # np_boxes: [class, score, x_min, y_min, x_max, y_max]
+        results = [
             {'class': self.labels[int(np_boxes[i][0])], 'score': float(np_boxes[i][1]), 'xmin': int(np_boxes[i][2]), 'ymin': int(
                 np_boxes[i][3]), 'xmax': int(np_boxes[i][4]), 'ymax': int(np_boxes[i][5])}
             for i in range(np_boxes_num.item())
         ]
-        return result
+        # 通过 THRESHOLD 过滤 + 转成字典（去重）
+        return {result['class']: result for result in results if result['score'] > self.threshold}
 
 
 if __name__ == '__main__':
