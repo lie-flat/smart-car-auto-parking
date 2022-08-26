@@ -69,13 +69,17 @@ inline __attribute__((always_inline)) void init_wifi() {
   WiFi.mode(WIFI_STA);  // station mode
   WiFi.begin(SSID, PASSWORD);
   while (WiFi.waitForConnectResult() != WL_CONNECTED) {
-    Serial.println(
-        "ERROR: Failed to connect to WiFi!\nRetrying...");
+    Serial.println("ERROR: Failed to connect to WiFi!\nRetrying...");
     delay(500);
   }
   Serial.print("INFO: Connected to WiFi! My IP Address is ");
   Serial.println(WiFi.localIP());
 #elif defined LIE_FLAT_WIFI_AP
+  IPAddress self(192, 168, 4, 1);
+  IPAddress subnetMask(255, 255, 255, 0);
+  if (WiFi.config(self, self, subnetMask) == false) {
+    Serial.println("AP Configuration failed.");
+  }
   WiFi.mode(WIFI_AP);  // AP/STA mode
   WiFi.softAP(AP_SSID, AP_PASSWORD);
   Serial.print("INFO: WiFi AP started! My IP Address is ");
