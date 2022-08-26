@@ -3,8 +3,8 @@ import numpy as np
 from .utils import drawPoints, stackImages
 
 
-def initServoAnglePredictor(avgVal, coefficent, range, debug=True):
-    mid = (range[0] + range[1])/2
+def initServoAnglePredictor(avgVal, coefficent, servoRange, debug=True):
+    mid = (servoRange[0] + servoRange[1])/2
     curveList = []
 
     def predictServoAngle(img, readTrackbars):
@@ -58,7 +58,7 @@ def initServoAnglePredictor(avgVal, coefficent, range, debug=True):
 
         curve = curve/100
         servo = curve * coefficent
-        servo = np.clip(servo+mid, range[0], range[1])
+        servo = np.clip(servo+mid, servoRange[0], servoRange[1])
         return servo
     return predictServoAngle
 
