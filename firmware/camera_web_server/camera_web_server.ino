@@ -15,20 +15,14 @@
 // ===================
 #define CAMERA_MODEL_AI_THINKER // Has PSRAM
 #include "camera_pins.h"
-#include <AsyncUDP.h>
 
 // ===========================
 // Enter your WiFi credentials
 // ===========================
-const char* ssid = "**********";
-const char* password = "**********";
-const char* FRAME_HEADER = "lie-flat device discovery!";
-const char* FRAME_VERB = "Advertise";
-const char* FRAME_DEVICE_NAME = "esp32-cam";
+const char* ssid = "lie-flat";
+const char* password = "flat-lie";
+IPAddress addr(192, 168, 4, 2);
 
-AsyncUDP udp;
-IPAddress addr;
-String frame;
 
 void startCameraServer();
 
@@ -103,7 +97,9 @@ void setup() {
   if (config.pixel_format == PIXFORMAT_JPEG) {
     s->set_framesize(s, FRAMESIZE_QVGA);
   }
-
+  if (WiFi.config(addr, addr, IPAddress(255, 255, 255, 0)) == false) {
+    Serial.println("Failed to configure WiFi!");
+  }
   WiFi.begin(ssid, password);
   WiFi.setSleep(false);
 
@@ -118,37 +114,7 @@ void setup() {
   Serial.print("Camera Ready! Use 'http://");
   Serial.print(addr);
   Serial.println("' to connect");
-  if (udp.listen(1234)) {
-    Serial.println("INFO: UDP Server started!");
-    udp.onPacket([](AsyncUDPPacket packet) {
-      if (packet.length() > 512) {
-        Serial.println("WARN: Dropping extra large packet!");
-        return;
-      }
-      if (strncmp((char*)packet.data(), FRAME_HEADER, strlen(FRAME_HEADER)) != 0) {
-        Serial.println("WARN: Not a lie-flat frame");
-        return;
-      }
-      auto rframe = String(packet.data(), packet.length());
-      int sep1 = rframe.indexOf('\n');
-      if (sep1 < 0) return;
-      auto verb = rframe.substring(sep1+1);
-      if (verb != "ACK") return;
-      Serial.println("Closing UDP Server!");
-      udp.close();
-    });
-  } else {
-    Serial.println("Failed to initialize UDP server!");
-  }
 }
 
 void loop() {
-  while (udp) {
-    if (frame.length() == 0) {
-      // Generate IP Discovery Frame
-      frame = String(FRAME_HEADER) + "\n" + FRAME_VERB + "\n" + addr.toString() + "\n" + FRAME_DEVICE_NAME;
-    }
-    delay(1000);
-    udp.broadcastTo(frame.c_str() , 1234);
-  }
 }
