@@ -3,7 +3,7 @@ import numpy as np
 from .utils import drawPoints
 
 
-def initServoAnglePredictor(avgVal, coefficent, servoRange, debug=True):
+def initServoAnglePredictor(avgWindowLen, coefficent, servoRange, debug=True):
     mid = (servoRange[0] + servoRange[1])/2
     curveList = []
 
@@ -28,7 +28,7 @@ def initServoAnglePredictor(avgVal, coefficent, servoRange, debug=True):
 
         # SETP 4
         curveList.append(curveRaw)
-        if len(curveList) > avgVal:
+        if len(curveList) > avgWindowLen:
             curveList.pop(0)
         curve = int(sum(curveList)/len(curveList))
 
@@ -41,18 +41,8 @@ def initServoAnglePredictor(avgVal, coefficent, servoRange, debug=True):
             imgLaneColor[:] = 0, 255, 0
             imgLaneColor = cv2.bitwise_and(imgInvWarp, imgLaneColor)
             imgResult = cv2.addWeighted(imgResult, 1, imgLaneColor, 1, 0)
-            midY = 450
             cv2.putText(imgResult, str(curve), (wT // 2 - 80, 85),
                         cv2.FONT_HERSHEY_COMPLEX, 2, (255, 0, 255), 3)
-            cv2.line(imgResult, (wT // 2, midY),
-                     (wT // 2 + (curve * 3), midY), (255, 0, 255), 5)
-            cv2.line(imgResult, ((wT // 2 + (curve * 3)), midY - 25),
-                     (wT // 2 + (curve * 3), midY + 25), (0, 255, 0), 5)
-            for x in range(-30, 30):
-                w = wT // 20
-                cv2.line(imgResult, (w * x + int(curve // 50), midY - 10),
-                         (w * x + int(curve // 50), midY + 10), (0, 0, 255), 2)
-
         curve = curve/100
         servo = curve * coefficent
         servo = np.clip(servo+mid, servoRange[0], servoRange[1])
