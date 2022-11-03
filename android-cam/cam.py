@@ -4,7 +4,7 @@ import cv2 as cv
 ip = input("IP address of your phone: ")
 vid = cv.VideoCapture(f"http://{ip}:4747/video?640x480")
 
-while(True):
+while True:
     ret, frame = vid.read()
     if not ret:
         raise "Failed to read image!"
