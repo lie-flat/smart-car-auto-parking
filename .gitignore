@@ -1,0 +1,3 @@
+device.cache.json
+firmware/build
+**/**/c_cpp_properties.json
