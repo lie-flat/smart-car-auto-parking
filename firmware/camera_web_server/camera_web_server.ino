@@ -16,6 +16,10 @@
 #define CAMERA_MODEL_AI_THINKER // Has PSRAM
 #include "camera_pins.h"
 
+#include "soc/soc.h"
+#include "soc/rtc_cntl_reg.h"
+
+
 // ===========================
 // Enter your WiFi credentials
 // ===========================
@@ -27,6 +31,9 @@ IPAddress addr(192, 168, 4, 2);
 void startCameraServer();
 
 void setup() {
+  // Disable brownout
+  WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0);
+
   Serial.begin(115200);
   Serial.setDebugOutput(true);
   Serial.println();
