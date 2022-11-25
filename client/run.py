@@ -6,7 +6,7 @@ import logging
 from cv import initTrackbars, initServoAnglePredictor, stackImages
 from controller import connect_to_board, control, buzz as buzz_raw
 from camera import CameraReader, CVReader
-from ai import DetModel
+# from ai import DetModel
 
 CAMERA_WIDTH = 320
 CAMERA_HEIGHT = 240
@@ -34,7 +34,7 @@ def main(camera, detector, width, height, initialTrackbarValues, ctrl, buzz):
         else:
             servo = predictServoAngle(img, points)
         ctrl(servo=servo)
-        if not RASPBERRY_PI:
+        if detector is not None:
             detected = detector.predict(img)
             for cat, result in detected.items():
                 print(cat)
@@ -60,7 +60,7 @@ if __name__ == '__main__':
                         format='%(asctime)s#%(levelname)s:%(message)s')
     devices = connect_to_board()
     if not RASPBERRY_PI:
-        detector = DetModel()
+        detector = None
     else:
         detector = None
     boardIP = devices['board']
