@@ -8,7 +8,7 @@ import glob
 
 
 # Define the dimensions of checkerboard
-CHECKERBOARD = (7, 6)
+CHECKERBOARD = (10, 7)
 
 
 # stop the iteration when specified
@@ -38,7 +38,7 @@ prev_img_shape = None
 # in a given directory. Since no path is
 # specified, it will take current directory
 # jpg files alone
-images = glob.glob('a/*.det.png')
+images = glob.glob('selected/*.det.png')
 
 for filename in images:
     image = cv2.imread(filename)
@@ -89,10 +89,10 @@ ret, matrix, distortion, r_vecs, t_vecs = cv2.calibrateCamera(
 
 # Displaying required output
 print(" Camera matrix:")
-print(matrix)
+print(repr(matrix))
 
 print("\n Distortion coefficient:")
-print(distortion)
+print(repr(distortion))
 
 print("\n Rotation Vectors:")
 print(r_vecs)

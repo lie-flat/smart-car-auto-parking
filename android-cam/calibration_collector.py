@@ -27,16 +27,16 @@ while True:
         raise Exception("Failed to read image!")
     gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
     # Find the chess board corners
-    ret, corners = cv.findChessboardCorners(gray, (7, 6), None)
+    ret, corners = cv.findChessboardCorners(gray, (10, 7), None)
     # If found, add object points, image points (after refining them)
     if ret == True:
         print("FOUND")
         objpoints.append(objp)
-        corners2 = cv.cornerSubPix(gray, corners, (11, 8), (-1, -1), criteria)
+        corners2 = cv.cornerSubPix(gray, corners, (11, 11), (-1, -1), criteria)
         imgpoints.append(corners2)
         # Draw and display the corners
-        cv.imwrite(f"{i}.det.png", img)
-        cv.drawChessboardCorners(img, (7, 6), corners2, ret)
+        cv.imwrite(f"b/{i}.det.png", img)
+        cv.drawChessboardCorners(img, (10, 7), corners2, ret)
         cv.imshow("I", img)
         i += 1
         cv.waitKey(2)
