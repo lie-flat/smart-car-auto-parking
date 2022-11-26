@@ -1,4 +1,3 @@
-from boarddef import ARUCO_TEST_BOARD_DEFINITION, ARUCO_TEST_BOARD_IDS
 from video_src import vid
 import numpy as np
 import cv2 as cv
@@ -6,10 +5,6 @@ import glob
 
 dic = cv.aruco.getPredefinedDictionary(cv.aruco.DICT_ARUCO_ORIGINAL)
 
-IMG_SIZE = (640, 480)
-
-BOARD = cv.aruco.Board_create(
-    ARUCO_TEST_BOARD_DEFINITION, dic, ARUCO_TEST_BOARD_IDS)
 
 
 # termination criteria
