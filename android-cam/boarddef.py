@@ -1,4 +1,5 @@
 import numpy as np
+import cv2 as cv
 
 SPACE_TOP = 90
 MARKER_SIZE = 20
@@ -51,7 +52,7 @@ ARUCO_TEST_BOARD_Z = 0
 ARUCO_TEST_BOARD_SIZE = (5, 4)
 ARUCO_TEST_BOARD_IDS = np.array([721, 960, 518, 942, 469, 909, 357, 700, 859, 639, 758, 593, 609, 274, 692,
                                 967, 278, 307, 699, 472], dtype="float32")  
-ARUCO_TEST_BOARD_IDS = np.array([1008, 92, 410, 35]*ARUCO_TEST_BOARD_SIZE[0])
+# ARUCO_TEST_BOARD_IDS = np.array([1008, 92, 410, 35]*ARUCO_TEST_BOARD_SIZE[0])
 
 
 def calculate_marker_pos(row, col, size, padding):
@@ -73,3 +74,6 @@ ARUCO_TEST_BOARD = [calculate_marker_pos(
     i, j, ARUCO_TEST_BOARD_MARKER_SIZE, ARUCO_TEST_BOARD_PADDING) for i in range(ARUCO_TEST_BOARD_SIZE[0]) for j in range(ARUCO_TEST_BOARD_SIZE[1])]
 
 ARUCO_TEST_BOARD_DEFINITION = np.array(ARUCO_TEST_BOARD, dtype="float32")
+
+CHARUCO_DIC = cv.aruco.getPredefinedDictionary(cv.aruco.DICT_4X4_50)
+CHARUCO_BOARD = cv.aruco.CharucoBoard_create(6, 6, 0.025, 0.02, CHARUCO_DIC)
