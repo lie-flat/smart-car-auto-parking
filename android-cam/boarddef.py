@@ -48,11 +48,13 @@ BOARD_DEFINITION = np.array([
 ARUCO_TEST_BOARD_MARKER_SIZE = 25
 ARUCO_TEST_BOARD_PADDING = 10
 ARUCO_TEST_BOARD_Z = 0
-ARUCO_TEST_BOARD_SIZE = (5,4)
+ARUCO_TEST_BOARD_SIZE = (5, 4)
+ARUCO_TEST_BOARD_IDS = np.array([721, 960, 518, 942, 469, 909, 357, 700, 859, 639, 758, 593, 609, 274, 692,
+                                967, 278, 307, 699, 472], dtype="float32")  
 ARUCO_TEST_BOARD_IDS = np.array([1008, 92, 410, 35]*ARUCO_TEST_BOARD_SIZE[0])
 
 
-def calculate_test_board_marker_pos(row, col):
+def calculate_marker_pos(row, col, size, padding):
     """
     row, col counts from zero!
     """
@@ -67,7 +69,7 @@ def calculate_test_board_marker_pos(row, col):
     ]
 
 
-ARUCO_TEST_BOARD = [calculate_test_board_marker_pos(
-    i, j) for i in range(ARUCO_TEST_BOARD_SIZE[0]) for j in range(ARUCO_TEST_BOARD_SIZE[1])]
+ARUCO_TEST_BOARD = [calculate_marker_pos(
+    i, j, ARUCO_TEST_BOARD_MARKER_SIZE, ARUCO_TEST_BOARD_PADDING) for i in range(ARUCO_TEST_BOARD_SIZE[0]) for j in range(ARUCO_TEST_BOARD_SIZE[1])]
 
 ARUCO_TEST_BOARD_DEFINITION = np.array(ARUCO_TEST_BOARD, dtype="float32")

@@ -1,6 +1,8 @@
 import cv2 as cv
 import numpy as np
 from boarddef import BOARD_DEFINITION, MARKER_SIZE, ARUCO_TEST_BOARD_DEFINITION, ARUCO_TEST_BOARD_IDS
+from camera_info import CAMERA_MAT, DIST_COEFFS
+
 
 ip = input("IP address of your phone: ")
 vid = cv.VideoCapture(f"http://{ip}:4747/video?640x480")
@@ -19,9 +21,6 @@ elif DETECT_BOARD == 'test':
     BOARD = cv.aruco.Board_create(
         ARUCO_TEST_BOARD_DEFINITION, dic, ARUCO_TEST_BOARD_IDS)
 
-CAMERA_MAT = np.array([[4, 0, 0], [0, 4, 0], [0, 0, 1]], dtype="float32")
-DIST_COEFFS = np.array([1, 1, 1, 1, 1], dtype="float32")
-
 
 while True:
     ret, frame = vid.read()
@@ -37,7 +36,7 @@ while True:
             if valid_cnt > 0:
                 cv.drawFrameAxes(frame, CAMERA_MAT, DIST_COEFFS,
                                  rotation, translation, 20, 10)
-        print(translation)
+                print(translation)
     cv.imshow('image', frame)
     if cv.waitKey(1) & 0xFF == ord('q'):
         break
