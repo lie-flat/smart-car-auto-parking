@@ -1,11 +1,7 @@
 import numpy as np
-import os
+from config import IS_RASPBERRYPI
 
-user = os.getlogin()
-
-print(f"Running on {'Raspberry Pi' if user == 'pi' else 'PC'}")
-
-if user == 'pi':
+if IS_RASPBERRYPI:
     CAMERA_MAT = np.array([[621.98474404,   0., 325.83155255],
                            [0., 622.99381138, 242.90768789],
                            [0.,   0.,   1.]], dtype="float32")
