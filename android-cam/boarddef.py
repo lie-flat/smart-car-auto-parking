@@ -46,8 +46,8 @@ BOARD_DEFINITION = np.array([
 #####################################
 
 
-ARUCO_TEST_BOARD_MARKER_SIZE = 25
-ARUCO_TEST_BOARD_PADDING = 10
+ARUCO_TEST_BOARD_MARKER_SIZE = 25 / 100
+ARUCO_TEST_BOARD_PADDING = 10 / 100
 ARUCO_TEST_BOARD_Z = 0
 ARUCO_TEST_BOARD_SIZE = (5, 4)
 ARUCO_TEST_BOARD_IDS = np.array([721, 960, 518, 942, 469, 909, 357, 700, 859, 639, 758, 593, 609, 274, 692,
@@ -71,9 +71,19 @@ def calculate_marker_pos(row, col, size, padding):
 
 
 ARUCO_TEST_BOARD = [calculate_marker_pos(
-    i, j, ARUCO_TEST_BOARD_MARKER_SIZE, ARUCO_TEST_BOARD_PADDING) for i in range(ARUCO_TEST_BOARD_SIZE[0]) for j in range(ARUCO_TEST_BOARD_SIZE[1])]
+    i, j, ARUCO_TEST_BOARD_MARKER_SIZE, ARUCO_TEST_BOARD_PADDING) for i in range(ARUCO_TEST_BOARD_SIZE[1]) for j in range(ARUCO_TEST_BOARD_SIZE[0])]
 
 ARUCO_TEST_BOARD_DEFINITION = np.array(ARUCO_TEST_BOARD, dtype="float32")
 
 CHARUCO_DIC = cv.aruco.getPredefinedDictionary(cv.aruco.DICT_4X4_50)
 CHARUCO_BOARD = cv.aruco.CharucoBoard_create(6, 6, 0.025, 0.02, CHARUCO_DIC)
+
+##############################
+
+FINAL_BOARD_DICT = cv.aruco.getPredefinedDictionary(cv.aruco.DICT_4X4_50)
+FINAL_BOARD = cv.aruco.GridBoard_create(
+    markersX=5,
+    markersY=4,
+    markerLength=0.025,
+    markerSeparation=0.01,
+    dictionary=FINAL_BOARD_DICT)
