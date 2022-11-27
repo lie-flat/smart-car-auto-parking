@@ -1,5 +1,5 @@
 import cv2 as cv
-import cv2.aruco as aruco
+import cv2.aruco as aruco  
 import numpy as np
 from boarddef import BOARD_DEFINITION, MARKER_SIZE, ARUCO_TEST_BOARD_DEFINITION, ARUCO_TEST_BOARD_IDS
 from camera_info import CAMERA_MAT, DIST_COEFFS

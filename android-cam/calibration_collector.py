@@ -30,7 +30,7 @@ while True:
         corners2 = cv.cornerSubPix(gray, corners, (11, 11), (-1, -1), criteria)
         imgpoints.append(corners2)
         # Draw and display the corners
-        cv.imwrite(f"b/{i}.det.png", img)
+        cv.imwrite(f"collected/{i}.det.png", img)
         cv.drawChessboardCorners(img, (10, 7), corners2, ret)
         cv.imshow("I", img)
         i += 1
