@@ -6,12 +6,12 @@ from camera_info import CAMERA_MAT, DIST_COEFFS
 from video_src import vid
 
 
-# z(out) -> y
-#  |    unit: mm
+# z(out) -> X
+#  |    unit: m
 # \ /
-#  x
+#  Y
 CHARUCO = False
-DETECT_BOARD = 'test'
+DETECT_BOARD = 'final'
 
 if CHARUCO:
     dic = aruco.getPredefinedDictionary(aruco.DICT_4X4_50)
@@ -19,14 +19,18 @@ if CHARUCO:
     BOARD = CHARUCO_BOARD
 
 else:
-    dic = aruco.getPredefinedDictionary(aruco.DICT_ARUCO_ORIGINAL)
-
-    if DETECT_BOARD == 'board':
-        BOARD = aruco.Board_create(
-            BOARD_DEFINITION, dic, np.array([369, 518, 766, 22]))
-    elif DETECT_BOARD == 'test':
-        BOARD = aruco.Board_create(
-            ARUCO_TEST_BOARD_DEFINITION, dic, ARUCO_TEST_BOARD_IDS)
+    if DETECT_BOARD == 'final':
+        from boarddef import FINAL_BOARD_DICT, FINAL_BOARD
+        dic = FINAL_BOARD_DICT
+        BOARD = FINAL_BOARD
+    else:
+        dic = aruco.getPredefinedDictionary(aruco.DICT_ARUCO_ORIGINAL)
+        if DETECT_BOARD == 'board':
+            BOARD = aruco.Board_create(
+                BOARD_DEFINITION, dic, np.array([369, 518, 766, 22]))
+        elif DETECT_BOARD == 'test':
+            BOARD = aruco.Board_create(
+                ARUCO_TEST_BOARD_DEFINITION, dic, ARUCO_TEST_BOARD_IDS)
 
 
 while True:
@@ -34,7 +38,7 @@ while True:
     if not ret:
         raise Exception("Failed to read image!")
     corners, ids, rejected_points = aruco.detectMarkers(frame, dic)
-    if ids is not None and len(ids) > 0:
+    if ids is not None and len(ids) > 5:
         # print(ids)
         aruco.drawDetectedMarkers(frame, corners, ids)
         if DETECT_BOARD:
@@ -43,8 +47,8 @@ while True:
                     corners, ids, BOARD, CAMERA_MAT, DIST_COEFFS, None, None)
                 if valid_cnt > 0:
                     cv.drawFrameAxes(frame, CAMERA_MAT, DIST_COEFFS,
-                                     rotation, translation, 5, 10)
-                    # print(translation)
+                                     rotation, translation, 0.08, 6)
+                    print(translation)
             else:
                 result, charuco_corners, charuco_ids = aruco.interpolateCornersCharuco(
                     corners, ids, frame, BOARD, None, None, CAMERA_MAT, DIST_COEFFS)
