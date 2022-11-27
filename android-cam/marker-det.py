@@ -1,9 +1,11 @@
 import cv2 as cv
-import cv2.aruco as aruco  
+import cv2.aruco as aruco
+import pickle
 import numpy as np
 from boarddef import BOARD_DEFINITION, MARKER_SIZE, ARUCO_TEST_BOARD_DEFINITION, ARUCO_TEST_BOARD_IDS
 from camera_info import CAMERA_MAT, DIST_COEFFS
 from video_src import vid
+from positioning import TRANSLATION, ROTATION, MAP_LEN_X, MAP_LEN_Y, MAP_FACTOR
 
 
 # z(out) -> X
@@ -12,6 +14,10 @@ from video_src import vid
 #  Y
 CHARUCO = False
 DETECT_BOARD = 'final'
+
+# DETECTION_PARAM = aruco.DetectorParameters_create()
+
+rots, trans = [], []
 
 if CHARUCO:
     dic = aruco.getPredefinedDictionary(aruco.DICT_4X4_50)
@@ -32,13 +38,15 @@ else:
             BOARD = aruco.Board_create(
                 ARUCO_TEST_BOARD_DEFINITION, dic, ARUCO_TEST_BOARD_IDS)
 
+world_map = 255 * np.ones((MAP_LEN_Y,MAP_LEN_X,3), dtype="uint8")
 
 while True:
     ret, frame = vid.read()
+    # print(frame.shape)
     if not ret:
         raise Exception("Failed to read image!")
     corners, ids, rejected_points = aruco.detectMarkers(frame, dic)
-    if ids is not None and len(ids) > 5:
+    if ids is not None and len(ids) >= 4:
         # print(ids)
         aruco.drawDetectedMarkers(frame, corners, ids)
         if DETECT_BOARD:
@@ -48,7 +56,16 @@ while True:
                 if valid_cnt > 0:
                     cv.drawFrameAxes(frame, CAMERA_MAT, DIST_COEFFS,
                                      rotation, translation, 0.08, 6)
-                    print(translation)
+                rotation_camera, _ = cv.Rodrigues(rotation)
+                # print(f"CAMERA rot: {rotation_camera}")
+                # print(f"CAMERA trans: {translation}")
+                rotation_world = ROTATION @ rotation_camera
+                translation_world = ROTATION @ translation + TRANSLATION.reshape(3, 1)
+                # print(f"ROT: {rotation_world}")
+                # print(f"TRANS: {translation_world}")
+                pos = (int(translation_world[0] * MAP_FACTOR), int(translation_world[1] * MAP_FACTOR))
+                print(pos)
+                world_map = cv.circle(world_map, pos, 5, (255,0,0), 5)
             else:
                 result, charuco_corners, charuco_ids = aruco.interpolateCornersCharuco(
                     corners, ids, frame, BOARD, None, None, CAMERA_MAT, DIST_COEFFS)
@@ -62,8 +79,12 @@ while True:
                                          rotation, translation, 20, 5)
                         # print(translation)
     cv.imshow('image', frame)
+    cv.imshow("world", world_map)
     if cv.waitKey(1) & 0xFF == ord('q'):
         break
 
 vid.release()
 cv.destroyAllWindows()
+
+with open("rottrans.pkl", "wb") as f:
+    pickle.dump((rots, trans), f)
