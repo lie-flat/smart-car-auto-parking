@@ -6,6 +6,8 @@ import logging
 
 CAMERA_BUFFRER_SIZE = 4096
 
+CAR_CAM_WIDTH = 320
+CAR_CAM_HEIGHT = 240
 
 class CameraReader:
     def __init__(self, ip) -> None:

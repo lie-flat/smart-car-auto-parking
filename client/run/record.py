@@ -5,7 +5,7 @@ from functools import partial
 from os import makedirs, path
 import cv2
 import numpy as np
-from cv import initTrackbars, initServoAnglePredictor
+from ..cv import initTrackbars, initServoAnglePredictor
 from ..controller import connect_to_board, control
 import logging
 from ..camera import CameraReader, CVReader

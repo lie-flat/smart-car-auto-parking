@@ -3,6 +3,8 @@ import numpy as np
 import cv2 as cv
 from ..config import IS_RASPBERRYPI, ip
 
+PHONE_CAM_WIDTH = 640
+PHONE_CAM_HEIGHT = 480
 
 def get_phone_video():
     global ip
