@@ -67,7 +67,6 @@ while True:
                 # print(f"TRANS: {translation_world}")
                 pos = (int(translation_world[0] * MAP_FACTOR),
                        int(translation_world[1] * MAP_FACTOR))
-                print(pos)
                 world_map = cv.circle(world_map, pos, 5, (255, 0, 0), 5)
             else:
                 result, charuco_corners, charuco_ids = aruco.interpolateCornersCharuco(
