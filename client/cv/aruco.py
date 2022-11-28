@@ -51,7 +51,7 @@ def estimate_pose_and_draw(frame, traj_map, rect_visual):
             # print(f"TRANS: {translation_world}")
             pos = (int(translation_world[1] * MAP_FACTOR),
                    int(translation_world[0] * MAP_FACTOR))
-            traj_map = cv.circle(traj_map, pos, 4, (0, 255, 255), )
+            traj_map = cv.circle(traj_map, pos, 4, (0x6E, 0x00, 0xFF), 4)
             # print(world_map.shape)
 
     return frame, traj_map, rect_visual, rotation, translation, rotation_world, translation_world
