@@ -2,10 +2,11 @@
 
 import cv2 as cv
 import numpy as np
+from PIL import ImageDraw, Image
 
 from ..camera.phone import PHONE_CAM_WIDTH, PHONE_CAM_HEIGHT
 from ..camera.camera import CAR_CAM_WIDTH, CAR_CAM_HEIGHT
-from ..config import MAP_LEN_Y, MAP_LEN_X
+from ..config import MAP_LEN_Y, MAP_LEN_X, CHINESE_FONT
 
 VIDEO_WIDTH = 1920
 VIDEO_HEIGHT = 1080
@@ -21,7 +22,15 @@ TEXT_AREA_WIDTH = VIDEO_WIDTH
 
 TEXT_AREA = np.ones((TEXT_AREA_HEIGHT, TEXT_AREA_WIDTH, 3),
                     dtype=np.uint8) * 255
+img_pil = Image.fromarray(TEXT_AREA)
+draw = ImageDraw.Draw(img_pil)
+draw.text((10, 10),  "关注山威数科班谢谢喵~~~",
+          font=CHINESE_FONT, fill=(0xFF, 0x90, 0x1E))
+TEXT_AREA = np.array(img_pil)
 
+FONT_SCALE = 1.3
+FONT_LINE_WIDTH = 2
+CV_FONT = cv.FONT_HERSHEY_DUPLEX
 
 def cat(phone_cam, road_mask, road_perspective, traj, visual, rotation, translation, text):
     """
@@ -39,7 +48,32 @@ def cat(phone_cam, road_mask, road_perspective, traj, visual, rotation, translat
          +----------------------------------------------+
     """
     info_area = INFO_AREA.copy()
+
+    cv.putText(info_area,  "World X : 2423532", (10, 40),
+               CV_FONT, FONT_SCALE, (255, 0, 255), FONT_LINE_WIDTH, cv.LINE_AA)
+    cv.putText(info_area,  "World Y : 2423532", (10, 80),
+               CV_FONT, FONT_SCALE, (255, 0, 255), FONT_LINE_WIDTH, cv.LINE_AA)
+    cv.putText(info_area,  "World Z : 2423532", (10, 120),
+               CV_FONT, FONT_SCALE, (255, 0, 255), FONT_LINE_WIDTH, cv.LINE_AA)
+    cv.putText(info_area,  "World RX: 2423532", (10, 160),
+               CV_FONT, FONT_SCALE, (255, 0, 255), FONT_LINE_WIDTH, cv.LINE_AA)
+    cv.putText(info_area,  "World RY: 2423532", (10, 200),
+               CV_FONT, FONT_SCALE, (255, 0, 255), FONT_LINE_WIDTH, cv.LINE_AA)
+    cv.putText(info_area,  "World RZ: 2423532", (10, 240),
+               CV_FONT, FONT_SCALE, (255, 0, 255), FONT_LINE_WIDTH, cv.LINE_AA)
+    cv.putText(info_area,  "Cam  X : 2423532", (10, 280),
+               CV_FONT, FONT_SCALE, (255, 0, 255), FONT_LINE_WIDTH, cv.LINE_AA)
+    cv.putText(info_area,  "Cam  Y : 2423532", (10, 320),
+               CV_FONT, FONT_SCALE, (255, 0, 255), FONT_LINE_WIDTH, cv.LINE_AA)
+    cv.putText(info_area,  "Cam  Z : 2423532", (10, 360),
+               CV_FONT, FONT_SCALE, (255, 0, 255), FONT_LINE_WIDTH, cv.LINE_AA)
+    cv.putText(info_area,  "Cam  RX: 2423532", (10, 400),
+               CV_FONT, FONT_SCALE, (255, 0, 255), FONT_LINE_WIDTH, cv.LINE_AA)
+    cv.putText(info_area,  "Cam  RY: 2423532", (10, 440),
+               CV_FONT, FONT_SCALE, (255, 0, 255), FONT_LINE_WIDTH, cv.LINE_AA)
+    cv.putText(info_area,  "Cam  RZ: 2423532", (10, 480),
+               CV_FONT, FONT_SCALE, (255, 0, 255), FONT_LINE_WIDTH, cv.LINE_AA)
     text_area = TEXT_AREA.copy()
     row1 = np.hstack([phone_cam, road_mask, road_perspective])
     row2 = np.hstack([traj, visual, info_area])
-    np.vsplit([row1, row2, text_area])
+    return np.vstack([row1, row2, text_area])
