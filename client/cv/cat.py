@@ -11,9 +11,14 @@ from ..config import MAP_LEN_Y, MAP_LEN_X, CHINESE_FONT
 VIDEO_WIDTH = 1920
 VIDEO_HEIGHT = 1080
 
-INFO_AREA_HEIGHT = MAP_LEN_X
-INFO_AREA_WIDTH = VIDEO_WIDTH - 2 * MAP_LEN_Y
 
+SEPARATOR_WIDTH = 10
+SEPARATOR_HEIGHT = MAP_LEN_X
+SEPARATOR = np.ones((SEPARATOR_HEIGHT, SEPARATOR_WIDTH, 3),
+                    dtype=np.uint8) * 50
+
+INFO_AREA_HEIGHT = MAP_LEN_X
+INFO_AREA_WIDTH = VIDEO_WIDTH - 2 * MAP_LEN_Y - 2 * SEPARATOR_WIDTH
 INFO_AREA = np.ones(
     (INFO_AREA_HEIGHT, INFO_AREA_WIDTH, 3), dtype=np.uint8) * 255
 
@@ -27,6 +32,7 @@ draw = ImageDraw.Draw(img_pil)
 draw.text((10, 10),  "求个 Star, 谢谢喵~: https://github.com/lie-flat/smart-car-auto-parking",
           font=CHINESE_FONT, fill=(0xFF, 0x90, 0x1E))
 TEXT_AREA = np.array(img_pil)
+
 
 FONT_SCALE = 1.3
 FONT_LINE_WIDTH = 2
@@ -47,11 +53,11 @@ def cat(phone_cam, road_mask, road_perspective, traj, visual, world_trans, world
       4  | marker det | road mask   | road(perspective) |
       8  | i:480x640  | i:240x320   | i:240x320x1       |
       0  | 480x640    | 480x640     | 480x640           |
-         +------------+-------------+-------------------+
-      5  | trajectory | rect visual | info display      |
-      0  | i: 507x605 | i: 507x605  | x:...,y:...,z:... |
-      7  | o: 507x605 | o: 507x605  | rotation:         |
-         +------------+-------------+-------------------+
+         +------------+-+------------+-+----------------+
+      5  | trajectory |S|rect visual |S|info display    |
+      0  | i: 507x605 |1|i: 507x605  |1|xyz             |
+      7  | o: 507x605 |0|o: 507x605  |0|rotation:       |
+         +------------+-+------------+-+-----------------+
       93 | text                                         |
          +----------------------------------------------+
     """
@@ -107,5 +113,5 @@ def cat(phone_cam, road_mask, road_perspective, traj, visual, world_trans, world
     cv.putText(info_area,  f"Cam  RZ: {cam_rz:.8}", (10, 480),
                CV_FONT, FONT_SCALE, CV_COLOR, FONT_LINE_WIDTH, cv.LINE_AA)
     row1 = np.hstack([phone_cam, road_mask, road_perspective])
-    row2 = np.hstack([traj, visual, info_area])
+    row2 = np.hstack([traj, SEPARATOR, visual, SEPARATOR, info_area])
     return np.vstack([row1, row2, TEXT_AREA])
