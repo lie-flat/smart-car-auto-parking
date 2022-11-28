@@ -1,0 +1,9 @@
+import numpy as np
+
+from ..camera.camera import CAR_CAM_HEIGHT, CAR_CAM_WIDTH
+
+IMG_RESULT_SHAPE = (CAR_CAM_HEIGHT,  CAR_CAM_WIDTH, 3)
+IMG_WARP_SHAPE = (CAR_CAM_HEIGHT, CAR_CAM_WIDTH)
+SHM_NP_DTYPE = np.uint8
+SHM_IMG_RESULT_NAME = "img-result"
+SHM_IMG_WARP_NAME = "img-warp"
