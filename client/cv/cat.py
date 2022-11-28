@@ -52,7 +52,7 @@ def null_coalesce(val, fallback):
     return val if val is not None else fallback
 
 
-def cat(phone_cam, road_mask, road_perspective, traj, visual, world_trans, world_rot, cam_trans, cam_rot):
+def cat(phone_cam, road_mask, road_perspective, traj, visual, world_trans, world_rot, cam_trans, cam_rot, fps):
     """
             640           640               640
          +------------+-------------+-------------------+
@@ -118,6 +118,10 @@ def cat(phone_cam, road_mask, road_perspective, traj, visual, world_trans, world
                CV_FONT, FONT_SCALE, CV_COLOR, FONT_LINE_WIDTH, cv.LINE_AA)
     cv.putText(info_area,  f"Cam  RZ: {cam_rz:.8}", (10, 480),
                CV_FONT, FONT_SCALE, CV_COLOR, FONT_LINE_WIDTH, cv.LINE_AA)
+    cv.putText(info_area,  "FPS", (550, 40),
+               CV_FONT, FONT_SCALE, (0, 255, 0), FONT_LINE_WIDTH, cv.LINE_AA)
+    cv.putText(info_area,  f"{fps:.2f}", (550, 80),
+               CV_FONT, FONT_SCALE, (0, 255, 0), FONT_LINE_WIDTH, cv.LINE_AA)
     row1 = np.hstack([phone_cam, road_mask, road_perspective])
     row2 = np.hstack([traj, SEPARATOR, visual, SEPARATOR, info_area])
     return np.vstack([row1, row2, TEXT_AREA])
