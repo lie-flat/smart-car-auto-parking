@@ -1,1 +1,2 @@
 MOTION = False
+SIGNDET = True

@@ -12,13 +12,12 @@ from ..controller import connect_to_board, control, buzz as buzz_raw
 from ..camera import CameraReader, CVReader
 from ..config import MOTION, IS_RASPBERRYPI, \
     SHM_IMG_WARP_NAME, SHM_IMG_RESULT_NAME, SHM_NP_DTYPE, \
-    IMG_RESULT_SHAPE, IMG_WARP_SHAPE
+    IMG_RESULT_SHAPE, IMG_WARP_SHAPE, SIGNDET
 
 CAMERA_WIDTH = 320
 CAMERA_HEIGHT = 240
 INITIAL_TRACKBAR_VALUES = [61, 200, 30, 240]
 DEBUG = True
-SIGN_DET = False
 
 predict_servo_angle = init_servo_angle_predictor(10, 5/0.3, (2.5, 12.5), DEBUG)
 
@@ -83,7 +82,7 @@ if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO,
                         format='%(asctime)s#%(levelname)s:%(message)s')
     devices = connect_to_board()
-    if not IS_RASPBERRYPI and SIGN_DET:
+    if not IS_RASPBERRYPI and SIGNDET:
         from ai.det import DetModel
         detector = DetModel()
     else:
