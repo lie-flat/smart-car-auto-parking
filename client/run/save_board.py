@@ -9,6 +9,6 @@ import cv2.aruco as aruco
 # cv.imwrite("test-board.png", img)
 
 
-from boarddef import FINAL_BOARD
+from ..config import FINAL_BOARD
 img = FINAL_BOARD.draw((500, 400))
 cv.imwrite("final-board.png", img)

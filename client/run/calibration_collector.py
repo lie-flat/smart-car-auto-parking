@@ -1,4 +1,4 @@
-from video_src import vid
+from ..camera  import get_phone_video
 import numpy as np
 import cv2 as cv
 import glob
@@ -16,6 +16,9 @@ objp[:, :2] = np.mgrid[0:7, 0:6].T.reshape(-1, 2)
 objpoints = []  # 3d point in real world space
 imgpoints = []  # 2d points in image plane.
 i = 0
+
+vid = get_phone_video()
+
 while True:
     ret, img = vid.read()
     if not ret:
@@ -30,7 +33,7 @@ while True:
         corners2 = cv.cornerSubPix(gray, corners, (11, 11), (-1, -1), criteria)
         imgpoints.append(corners2)
         # Draw and display the corners
-        cv.imwrite(f"b/{i}.det.png", img)
+        cv.imwrite(f"cab/{i}.det.png", img)
         cv.drawChessboardCorners(img, (10, 7), corners2, ret)
         cv.imshow("I", img)
         i += 1

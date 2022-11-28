@@ -1,9 +1,9 @@
 import cv2 as cv
 import numpy as np
-from boarddef import BOARD_DEFINITION, MARKER_SIZE, ARUCO_TEST_BOARD_DEFINITION, ARUCO_TEST_BOARD_IDS
+from ..config import BOARD_DEFINITION, MARKER_SIZE, ARUCO_TEST_BOARD_DEFINITION, ARUCO_TEST_BOARD_IDS
+from ..camera import get_phone_video
 
-ip = input("IP address of your phone: ")
-vid = cv.VideoCapture(f"http://{ip}:4747/video?640x480")
+vid = get_phone_video()
 
 i = 0
 

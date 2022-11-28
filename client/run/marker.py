@@ -2,11 +2,12 @@ import cv2 as cv
 import cv2.aruco as aruco
 import pickle
 import numpy as np
-from boarddef import BOARD_DEFINITION, MARKER_SIZE, ARUCO_TEST_BOARD_DEFINITION, ARUCO_TEST_BOARD_IDS
-from camera_info import CAMERA_MAT, DIST_COEFFS
-from video_src import vid
-from positioning import TRANSLATION, ROTATION, MAP_LEN_X, MAP_LEN_Y, MAP_FACTOR
+from .config import BOARD_DEFINITION, ARUCO_TEST_BOARD_DEFINITION, ARUCO_TEST_BOARD_IDS
+from .camera.phone import CAMERA_MAT, DIST_COEFFS
+from .camera import get_phone_video
+from .config import TRANSLATION, ROTATION, MAP_LEN_X, MAP_LEN_Y, MAP_FACTOR
 
+vid = get_phone_video()
 
 # z(out) -> X
 #  |    unit: m
@@ -21,12 +22,12 @@ rots, trans = [], []
 
 if CHARUCO:
     dic = aruco.getPredefinedDictionary(aruco.DICT_4X4_50)
-    from boarddef import CHARUCO_BOARD
+    from client.config.boarddef import CHARUCO_BOARD
     BOARD = CHARUCO_BOARD
 
 else:
     if DETECT_BOARD == 'final':
-        from boarddef import FINAL_BOARD_DICT, FINAL_BOARD
+        from client.config.boarddef import FINAL_BOARD_DICT, FINAL_BOARD
         dic = FINAL_BOARD_DICT
         BOARD = FINAL_BOARD
     else:
@@ -38,7 +39,7 @@ else:
             BOARD = aruco.Board_create(
                 ARUCO_TEST_BOARD_DEFINITION, dic, ARUCO_TEST_BOARD_IDS)
 
-world_map = 255 * np.ones((MAP_LEN_Y,MAP_LEN_X,3), dtype="uint8")
+world_map = 255 * np.ones((MAP_LEN_Y, MAP_LEN_X, 3), dtype="uint8")
 
 while True:
     ret, frame = vid.read()
@@ -60,12 +61,14 @@ while True:
                 # print(f"CAMERA rot: {rotation_camera}")
                 # print(f"CAMERA trans: {translation}")
                 rotation_world = ROTATION @ rotation_camera
-                translation_world = ROTATION @ translation + TRANSLATION.reshape(3, 1)
+                translation_world = ROTATION @ translation + \
+                    TRANSLATION.reshape(3, 1)
                 # print(f"ROT: {rotation_world}")
                 # print(f"TRANS: {translation_world}")
-                pos = (int(translation_world[0] * MAP_FACTOR), int(translation_world[1] * MAP_FACTOR))
+                pos = (int(translation_world[0] * MAP_FACTOR),
+                       int(translation_world[1] * MAP_FACTOR))
                 print(pos)
-                world_map = cv.circle(world_map, pos, 5, (255,0,0), 5)
+                world_map = cv.circle(world_map, pos, 5, (255, 0, 0), 5)
             else:
                 result, charuco_corners, charuco_ids = aruco.interpolateCornersCharuco(
                     corners, ids, frame, BOARD, None, None, CAMERA_MAT, DIST_COEFFS)

@@ -3,9 +3,9 @@ import cv2
 import logging
 
 
-from cv import initTrackbars, initServoAnglePredictor, stackImages
-from controller import connect_to_board, control, buzz as buzz_raw
-from camera import CameraReader, CVReader
+from .cv import initTrackbars, initServoAnglePredictor, stackImages
+from .controller import connect_to_board, control, buzz as buzz_raw
+from .camera import CameraReader, CVReader
 # from ai import DetModel
 
 CAMERA_WIDTH = 320

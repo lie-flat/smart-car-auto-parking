@@ -6,9 +6,9 @@ from os import makedirs, path
 import cv2
 import numpy as np
 from cv import initTrackbars, initServoAnglePredictor
-from controller import connect_to_board, control
+from ..controller import connect_to_board, control
 import logging
-from camera import CameraReader, CVReader
+from ..camera import CameraReader, CVReader
 
 CAMERA_WIDTH = 320
 CAMERA_HEIGHT = 240

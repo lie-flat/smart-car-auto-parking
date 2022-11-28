@@ -1,6 +1,7 @@
-import cv2
+import cv2 as cv
 import numpy as np
 from urllib.request import urlopen
+
 import logging
 
 CAMERA_BUFFRER_SIZE = 4096
@@ -16,7 +17,10 @@ class CameraReader:
             try:
                 req = urlopen(self.url)
                 arr = np.asarray(bytearray(req.read()), dtype=np.uint8)
-                return cv2.imdecode(arr, -1)
+                return cv.imdecode(arr, -1)
             except Exception as e:
                 self.log.error("Read Error:" + str(e))
                 continue
+
+
+

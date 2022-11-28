@@ -1,7 +1,7 @@
 import cv2
-from ai import DetModel
-from camera import CameraReader, CVReader
-from controller import connect_to_board, buzz as buzz_raw
+from ..ai import DetModel
+from ..camera import CameraReader, CVReader
+from ..controller import connect_to_board, buzz as buzz_raw
 from functools import partial
 
 

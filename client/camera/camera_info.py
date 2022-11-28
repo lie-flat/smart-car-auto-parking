@@ -1,5 +1,5 @@
 import numpy as np
-from config import IS_RASPBERRYPI
+from ..config import IS_RASPBERRYPI
 
 if IS_RASPBERRYPI:
     CAMERA_MAT = np.array([[621.98474404,   0., 325.83155255],
