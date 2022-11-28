@@ -2,3 +2,5 @@ device.cache.json
 firmware/build
 **/**/c_cpp_properties.json
 **/**/__pycache__
+misc
+devices.cache.json
