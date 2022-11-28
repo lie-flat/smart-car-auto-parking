@@ -29,8 +29,14 @@ TEXT_AREA = np.ones((TEXT_AREA_HEIGHT, TEXT_AREA_WIDTH, 3),
                     dtype=np.uint8) * 255
 img_pil = Image.fromarray(TEXT_AREA)
 draw = ImageDraw.Draw(img_pil)
-draw.text((10, 10),  "求个 Star, 谢谢喵~: https://github.com/lie-flat/smart-car-auto-parking",
+draw.text((10, -3),  "求个 Star, 谢谢喵~: https://github.com/lie-flat/smart-car-auto-parking",
           font=CHINESE_FONT, fill=(0xFF, 0x90, 0x1E))
+draw.text((1260, -3),  "非常感谢得意黑 SmileySans 这款开源字体",
+          font=CHINESE_FONT, fill=(0x75, 0x7A, 0x0B))
+draw.text((10, 45),  "*: 因为 ESP32 CAM 网络延迟问题，小车摄像头的画面有时会有不确定的延迟（一般在 1s 左右）",
+          font=CHINESE_FONT, fill=(0x4B, 0x4B, 0xE5))
+draw.text((1500, 45),  "山东大学（威海）,数科班",
+          font=CHINESE_FONT, fill=(0xC5, 0xFF, 0x00))
 TEXT_AREA = np.array(img_pil)
 
 
