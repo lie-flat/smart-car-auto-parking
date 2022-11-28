@@ -41,8 +41,8 @@ def init_servo_angle_predictor(avgWindowLen, coefficent, servoRange, debug=True)
             imgLaneColor[:] = 0, 255, 0
             imgLaneColor = cv2.bitwise_and(imgInvWarp, imgLaneColor)
             imgResult = cv2.addWeighted(imgResult, 1, imgLaneColor, 1, 0)
-            cv2.putText(imgResult, str(curve), (wT // 2 - 80, 85),
-                        cv2.FONT_HERSHEY_COMPLEX, 2, (255, 0, 255), 3)
+            # cv2.putText(imgResult, str(curve), (wT // 2 - 80, 85),
+            #             cv2.FONT_HERSHEY_COMPLEX, 2, (255, 0, 255), 3)
         curve = curve/100
         servo = curve * coefficent
         servo = np.clip(servo+mid, servoRange[0], servoRange[1])
