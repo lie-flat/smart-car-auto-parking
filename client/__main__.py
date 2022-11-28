@@ -1,13 +1,13 @@
 from functools import partial
-import cv2
+import cv as cv
 import logging
+import numpy as np
 
-
-from .cv import init_trackbars, init_servo_angle_predictor, stack_images
+from .cv import init_trackbars, init_servo_angle_predictor, cat, estimate_pose_and_draw
 from .controller import connect_to_board, control, buzz as buzz_raw
 from .camera import CameraReader, CVReader
 from .camera.camera import CAR_CAM_HEIGHT, CAR_CAM_WIDTH
-from .config import IS_RASPBERRYPI
+from .config import IS_RASPBERRYPI, MAP_LEN_X, MAP_LEN_Y
 
 INITIAL_TRACKBAR_VALUES = [61, 200, 30, 240]
 MOTION = True
@@ -15,6 +15,14 @@ DEBUG = True
 SIGN_DET = False
 
 predictServoAngle = init_servo_angle_predictor(10, 5/0.3, (2.5, 12.5), DEBUG)
+
+traj_map = 255 * np.ones((MAP_LEN_X, MAP_LEN_Y, 3), dtype="uint8")
+rect_visual = 255 * np.ones((MAP_LEN_X, MAP_LEN_Y, 3), dtype="uint8")
+
+
+cv.namedWindow("frame", cv.WINDOW_NORMAL)
+cv.setWindowProperty("frame", cv.WND_PROP_FULLSCREEN, cv.WINDOW_FULLSCREEN)
+
 
 def main(camera, detector, width, height, initialTrackbarValues, ctrl, buzz):
     log = logging.getLogger()
@@ -32,23 +40,27 @@ def main(camera, detector, width, height, initialTrackbarValues, ctrl, buzz):
         else:
             servo = predictServoAngle(img, points)
         ctrl(servo=servo)
+        cv.imshow("img", img)
+        frame, traj_map, rect_visual, \
+            rotation, translation,\
+            rotation_world, translation_world = estimate_pose_and_draw(
+                img, traj_map, rect_visual)
         if detector is not None:
             detected = detector.predict(img)
             for cat, result in detected.items():
                 print(cat)
-                cv2.rectangle(imgResult, (result['xmin'], result['ymin']),
-                              (result['xmax'], result['ymax']), (0, 0, 255), 2)
+                cv.rectangle(imgResult, (result['xmin'], result['ymin']),
+                             (result['xmax'], result['ymax']), (0, 0, 255), 2)
                 if cat == 'warning':
                     buzz(2000, 500)
                 elif cat == 'prohibitory':
                     buzz(4000, 500)
                 else:  # 'mandatory'
                     buzz(6000, 500)
-        if DEBUG:
-            stack = stack_images(
-                1, [[imgWarp, imgWarpPoints], [imgHist, imgResult]])
-            cv2.imshow("stack", stack)
-        if cv2.waitKey(1) & 0xFF == ord('q'):
+        frame = cat(frame, imgWarp, imgResult, traj_map, rect_visual, rotation,
+                    translation, rotation_world, translation_world)
+        cv.imshow("frame", frame)
+        if cv.waitKey(1) & 0xFF == ord('q'):
             break
 
 
