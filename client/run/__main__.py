@@ -101,7 +101,9 @@ if __name__ == '__main__':
         main(camera, detector, CAMERA_WIDTH, CAMERA_HEIGHT,
              INITIAL_TRACKBAR_VALUES, ctrl, buzz)
     finally:
+        img_result_shm.close()
         img_result_shm.unlink()
+        img_warp_shm.close()
         img_warp_shm.unlink()
         # Reset servo and stop the car
         ctrl(servo=7.5, motorA=0, motorB=0)
