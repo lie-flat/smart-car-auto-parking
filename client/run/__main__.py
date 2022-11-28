@@ -83,7 +83,7 @@ if __name__ == '__main__':
                         format='%(asctime)s#%(levelname)s:%(message)s')
     devices = connect_to_board()
     if not IS_RASPBERRYPI and SIGNDET:
-        from ai.det import DetModel
+        from ..ai.det import DetModel
         detector = DetModel()
     else:
         detector = None
