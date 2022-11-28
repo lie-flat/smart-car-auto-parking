@@ -1,28 +1,28 @@
 import cv2
 import numpy as np
-from .utils import drawPoints
+from .utils import draw_points
 
 
-def initServoAnglePredictor(avgWindowLen, coefficent, servoRange, debug=True):
+def init_servo_angle_predictor(avgWindowLen, coefficent, servoRange, debug=True):
     mid = (servoRange[0] + servoRange[1])/2
     curveList = []
 
-    def predictServoAngle(img, points):
+    def predict_servo_angle(img, points):
         imgCopy = img.copy()
         imgResult = img.copy()
         # STEP 1
-        imgThres = getLaneMaskByColor(img)
+        imgThres = get_lane_mask_by_color(img)
 
         # STEP 2
         hT, wT, c = img.shape
         imgWarp = warp(imgThres, points, wT, hT)
         if debug:
-            imgWarpPoints = drawPoints(imgCopy, points)
+            imgWarpPoints = draw_points(imgCopy, points)
 
         # STEP 3
-        middlePoint = getHistogram(
+        middlePoint = get_histogram(
             imgWarp, minPer=0.5, region=4, debug=False)
-        curveAveragePoint, imgHist = getHistogram(
+        curveAveragePoint, imgHist = get_histogram(
             imgWarp, minPer=0.9, debug=debug)
         curveRaw = curveAveragePoint - middlePoint
 
@@ -47,10 +47,10 @@ def initServoAnglePredictor(avgWindowLen, coefficent, servoRange, debug=True):
         servo = curve * coefficent
         servo = np.clip(servo+mid, servoRange[0], servoRange[1])
         return servo, [imgWarpPoints, imgWarp, imgHist, imgResult] if debug else servo
-    return predictServoAngle
+    return predict_servo_angle
 
 
-def getLaneMaskByColor(img):
+def get_lane_mask_by_color(img):
     # Convert img to HSV
     imgHsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
     # Note: In OpenCV, Hue: [0,180), Sat: [0,255], Value: [0,255]
@@ -63,10 +63,10 @@ def getLaneMaskByColor(img):
     return maskBlack
 
 
-def initTrackbars(initialValues, width, height):
+def init_trackbars(initialValues, width, height):
     def pas(_): return None
 
-    def createTrackbars():
+    def create_trackbars():
         cv2.namedWindow("Trackbars")
         cv2.resizeWindow("Trackbars", 360, 240)
         cv2.createTrackbar("Width Top", "Trackbars",
@@ -78,7 +78,7 @@ def initTrackbars(initialValues, width, height):
         cv2.createTrackbar("Height Bottom", "Trackbars",
                            initialValues[3], height, pas)
 
-    def readTrackbars():
+    def read_trackbars():
         widthTop = cv2.getTrackbarPos("Width Top", "Trackbars")
         heightTop = cv2.getTrackbarPos("Height Top", "Trackbars")
         widthBottom = cv2.getTrackbarPos("Width Bottom", "Trackbars")
@@ -86,7 +86,7 @@ def initTrackbars(initialValues, width, height):
         points = np.float32([(widthTop, heightTop), (width-widthTop, heightTop),
                             (widthBottom, heightBottom), (width-widthBottom, heightBottom)])
         return points
-    return createTrackbars, readTrackbars
+    return create_trackbars, read_trackbars
 
 
 def warp(img, points, w, h, inv=False):
@@ -107,7 +107,7 @@ def warp(img, points, w, h, inv=False):
     return imgWarp
 
 
-def getHistogram(img, minPer=0.1, region=1, debug=True):
+def get_histogram(img, minPer=0.1, region=1, debug=True):
 
     if region == 1:
         histValues = np.sum(img, axis=0)

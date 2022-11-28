@@ -5,7 +5,7 @@ from functools import partial
 from os import makedirs, path
 import cv2
 import numpy as np
-from ..cv import initTrackbars, initServoAnglePredictor
+from ..cv import init_trackbars, init_servo_angle_predictor
 from ..controller import connect_to_board, control
 import logging
 from ..camera import CameraReader, CVReader
@@ -15,12 +15,12 @@ CAMERA_HEIGHT = 240
 INITIAL_TRACKBAR_VALUES = [61, 200, 30, 240]
 MOTION = True
 
-predictServoAngle = initServoAnglePredictor(10, 5/0.3, (2.5, 12.5), True)
+predictServoAngle = init_servo_angle_predictor(10, 5/0.3, (2.5, 12.5), True)
 
 
 def main(camera, width, height, initialTrackbarValues, ctrl):
     log = logging.getLogger()
-    createTrackbars, readTrackbars = initTrackbars(
+    createTrackbars, readTrackbars = init_trackbars(
         initialTrackbarValues, width, height)
     createTrackbars()
     while True:

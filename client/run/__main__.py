@@ -5,7 +5,7 @@ import cv2
 import logging
 
 
-from ..cv import initTrackbars, initServoAnglePredictor, stackImages
+from ..cv import init_trackbars, init_servo_angle_predictor, stack_images
 from ..controller import connect_to_board, control, buzz as buzz_raw
 from ..camera import CameraReader, CVReader
 # from ai import DetModel
@@ -17,12 +17,12 @@ MOTION = True
 DEBUG = True
 RASPBERRY_PI = False
 
-predictServoAngle = initServoAnglePredictor(10, 5/0.3, (2.5, 12.5), DEBUG)
+predictServoAngle = init_servo_angle_predictor(10, 5/0.3, (2.5, 12.5), DEBUG)
 
 
 def main(camera, detector, width, height, initialTrackbarValues, ctrl, buzz):
     log = logging.getLogger()
-    createTrackbars, readTrackbars = initTrackbars(
+    createTrackbars, readTrackbars = init_trackbars(
         initialTrackbarValues, width, height)
     createTrackbars()
     while True:
@@ -49,7 +49,7 @@ def main(camera, detector, width, height, initialTrackbarValues, ctrl, buzz):
                 else:  # 'mandatory'
                     buzz(6000, 500)
         if DEBUG:
-            stack = stackImages(1, [[imgWarp, imgWarpPoints], [imgHist, imgResult]])
+            stack = stack_images(1, [[imgWarp, imgWarpPoints], [imgHist, imgResult]])
             cv2.imshow("stack", stack)
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break

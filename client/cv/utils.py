@@ -2,14 +2,14 @@ import numpy as np
 import cv2
 
 
-def drawPoints(img, points):
+def draw_points(img, points):
     for x in range(4):
         cv2.circle(img, (int(points[x][0]), int(
             points[x][1])), 12, (0, 0, 255), cv2.FILLED)
     return img
 
 
-def stackImages(scale, imgArray):
+def stack_images(scale, imgArray):
     rows = len(imgArray)
     cols = len(imgArray[0])
     rowsAvailable = isinstance(imgArray[0], list)
