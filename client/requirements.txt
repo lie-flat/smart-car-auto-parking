@@ -2,5 +2,5 @@ requests
 paddlepaddle-gpu
 opencv-contrib-python
 numpy
-pyjoystick
+pygame
 pillow
