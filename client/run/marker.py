@@ -2,10 +2,10 @@ import cv2 as cv
 import cv2.aruco as aruco
 import pickle
 import numpy as np
-from .config import BOARD_DEFINITION, ARUCO_TEST_BOARD_DEFINITION, ARUCO_TEST_BOARD_IDS
-from .camera.phone import CAMERA_MAT, DIST_COEFFS
-from .camera import get_phone_video
-from .config import TRANSLATION, ROTATION, MAP_LEN_X, MAP_LEN_Y, MAP_FACTOR
+from ..config import BOARD_DEFINITION, ARUCO_TEST_BOARD_DEFINITION, ARUCO_TEST_BOARD_IDS
+from ..camera.phone import CAMERA_MAT, DIST_COEFFS
+from ..camera import get_phone_video
+from ..config import TRANSLATION, ROTATION, MAP_LEN_X, MAP_LEN_Y, MAP_FACTOR
 
 vid = get_phone_video()
 
