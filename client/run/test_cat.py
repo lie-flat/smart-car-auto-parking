@@ -3,11 +3,12 @@ import cv2 as cv
 
 from ..cv.cat import cat
 from ..camera.phone import PHONE_CAM_HEIGHT, PHONE_CAM_WIDTH
+from ..camera.camera import CAR_CAM_HEIGHT, CAR_CAM_WIDTH
 from ..config import MAP_LEN_X, MAP_LEN_Y
 
 frame1 = np.ones((PHONE_CAM_HEIGHT, PHONE_CAM_WIDTH, 3), dtype=np.uint8) * 0
-frame2 = np.ones((PHONE_CAM_HEIGHT, PHONE_CAM_WIDTH, 3), dtype=np.uint8) * 145
-frame3 = np.ones((PHONE_CAM_HEIGHT, PHONE_CAM_WIDTH, 3), dtype=np.uint8) * 255
+frame2 = np.ones((CAR_CAM_HEIGHT, CAR_CAM_WIDTH, 3), dtype=np.uint8) * 145
+frame3 = np.ones((CAR_CAM_HEIGHT, CAR_CAM_WIDTH), dtype=np.uint8) * 255
 frame4 = np.ones((MAP_LEN_X, MAP_LEN_Y, 3), dtype=np.uint8) * 255
 frame5 = np.ones((MAP_LEN_X, MAP_LEN_Y, 3), dtype=np.uint8) * 0
 
