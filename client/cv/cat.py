@@ -33,13 +33,19 @@ FONT_LINE_WIDTH = 2
 CV_FONT = cv.FONT_HERSHEY_DUPLEX
 CV_COLOR = (255, 0, 255)
 
+PLACEHOLDER = np.array([np.NaN, np.NaN, np.NaN])
+
+
+def null_coalesce(val, fallback):
+    return val if val is not None else fallback
+
 
 def cat(phone_cam, road_mask, road_perspective, traj, visual, world_trans, world_rot, cam_trans, cam_rot):
     """
             640           640               640
          +------------+-------------+-------------------+
       4  | marker det | road mask   | road(perspective) |
-      8  | i:240x320  | i:240x320   | i:480x640         |
+      8  | i:480x640  | i:240x320   | i:240x320x1       |
       0  | 480x640    | 480x640     | 480x640           |
          +------------+-------------+-------------------+
       5  | trajectory | rect visual | info display      |
@@ -50,6 +56,20 @@ def cat(phone_cam, road_mask, road_perspective, traj, visual, world_trans, world
          +----------------------------------------------+
     """
     info_area = INFO_AREA.copy()
+    # Resize inputs
+    road_mask = cv.resize(road_mask, (PHONE_CAM_WIDTH, PHONE_CAM_HEIGHT))
+    road_perspective = cv.cvtColor(road_perspective, cv.COLOR_GRAY2BGR)
+    road_perspective = cv.resize(
+        road_perspective, (PHONE_CAM_WIDTH, PHONE_CAM_HEIGHT))
+    # Null coalescing
+    world_trans = null_coalesce(world_trans, PLACEHOLDER)
+    cam_trans = null_coalesce(cam_trans, PLACEHOLDER)
+    world_rot = null_coalesce(world_rot, PLACEHOLDER)
+    cam_rot = null_coalesce(cam_rot, PLACEHOLDER)
+    # Convert mats to vecs
+    if world_rot.size > 3:
+        world_rot, _ = cv.Rodrigues(world_rot)
+    # get numbers from vecs
     world_x = world_trans[0].item()
     world_y = world_trans[1].item()
     world_z = world_trans[2].item()
@@ -86,7 +106,6 @@ def cat(phone_cam, road_mask, road_perspective, traj, visual, world_trans, world
                CV_FONT, FONT_SCALE, CV_COLOR, FONT_LINE_WIDTH, cv.LINE_AA)
     cv.putText(info_area,  f"Cam  RZ: {cam_rz:.8}", (10, 480),
                CV_FONT, FONT_SCALE, CV_COLOR, FONT_LINE_WIDTH, cv.LINE_AA)
-    text_area = TEXT_AREA.copy()
     row1 = np.hstack([phone_cam, road_mask, road_perspective])
     row2 = np.hstack([traj, visual, info_area])
-    return np.vstack([row1, row2, text_area])
+    return np.vstack([row1, row2, TEXT_AREA])
