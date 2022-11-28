@@ -14,8 +14,11 @@ frame5 = np.ones((MAP_LEN_X, MAP_LEN_Y, 3), dtype=np.uint8) * 0
 cv.namedWindow("frame", cv.WINDOW_NORMAL)
 cv.setWindowProperty("frame", cv.WND_PROP_FULLSCREEN, cv.WINDOW_FULLSCREEN)
 
+fake_dat = np.array([1.23324324, 324.3243243253425, 324.324234])
+
 while True:
-    frame = cat(frame1, frame2, frame3, frame4, frame5, None, None, None)
+    frame = cat(frame1, frame2, frame3, frame4, frame5, fake_dat,
+                fake_dat, fake_dat, fake_dat)
     cv.imshow("frame", frame)
     if cv.waitKey(1) & 0xFF == ord('q'):
         break
