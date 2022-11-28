@@ -1,7 +1,6 @@
 from ..camera  import get_phone_video
 import numpy as np
 import cv2 as cv
-import glob
 
 dic = cv.aruco.getPredefinedDictionary(cv.aruco.DICT_ARUCO_ORIGINAL)
 
