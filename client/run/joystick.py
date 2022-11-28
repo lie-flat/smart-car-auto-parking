@@ -1,6 +1,6 @@
 import logging
 import pygame
-from ..controller import connect_to_board, read_sensors, control
+from ..controller import connect_to_board, buzz, control
 from functools import partial
 
 pygame.init()
@@ -32,12 +32,17 @@ devices = connect_to_board()
 log.info(f"Found devices: {devices}")
 ip = devices['board']
 control = partial(control, ip)
+buzz = partial(buzz, ip)
 # control = lambda *a, **b: None
+# buzz = lambda *a, **b: None
 control(servo=7.5, motorA=0, motorB=0)
 
 lt = -1
 rt = -1
 speed = 0
+should_buzz = False
+buzz_freq = 3000
+buzz_duration = 700
 
 
 while keepPlaying:
@@ -55,14 +60,28 @@ while keepPlaying:
         elif event.type == pygame.JOYBUTTONUP:
             if event.button == 5:
                 speed += 10
-            if event.button == 4:
+            elif event.button == 4:
                 speed -= 10
-
+            elif event.button == 0:
+                should_buzz = True
+                buzz_freq = 100
+            elif event.button == 1:
+                should_buzz = True
+                buzz_freq = 500
+            elif event.button == 2:
+                should_buzz = True
+                buzz_freq = 1000
+            elif event.button == 3:
+                should_buzz = True
+                buzz_freq = 5000
     # print(f"lt = {lt}, rt={rt}")
     servo = ((rt + 1) - (lt + 1)) * 5 / 2 + 7.5
     servo = clamp(servo, 2.5, 12.5)
     speed = clamp(speed, -100, 100)
-    print(f"Servo = {servo}")
+    # print(f"Servo = {servo}")
     motorA = 0 if speed < 0 else speed
     motorB = 0 if speed > 0 else speed
     control(servo=servo, motorA=motorA, motorB=motorB)
+    if should_buzz:
+        should_buzz = False
+        buzz(buzz_freq, buzz_duration)
