@@ -20,12 +20,11 @@ img_result = np.ndarray(IMG_RESULT_SHAPE, dtype=SHM_NP_DTYPE,
 img_warp_shm = SharedMemory(name=SHM_IMG_WARP_NAME)
 img_warp = np.ndarray(IMG_WARP_SHAPE, dtype=SHM_NP_DTYPE,
                       buffer=img_warp_shm.buf)
-traj_map = 255 * np.ones((MAP_LEN_X, MAP_LEN_Y, 3), dtype="uint8")
-rect_visual = 255 * np.ones((MAP_LEN_X, MAP_LEN_Y, 3), dtype="uint8")
+
 
 if RECORDER == 'video':
     fourcc = cv.VideoWriter_fourcc(*'MP4V')
-    writer = cv.VideoWriter(RECORDER_OUTPUT_FILE, fourcc, 20.0, (1920, 1080))
+    writer = cv.VideoWriter(RECORDER_OUTPUT_FILE, fourcc, 18.0, (1920, 1080))
 else:
     writer = None
 
@@ -44,15 +43,13 @@ def main():
         ret, frame = vid.read()
         if not ret:
             raise Exception("Failed to read from phone.")
-        frame, traj_map, rect_visual, \
-            rotation, translation,\
-            rotation_world, translation_world = estimate_pose_and_draw(
-                frame, traj_map, rect_visual)
+        frame, rotation, translation, rotation_world, translation_world \
+            = estimate_pose_and_draw(frame)
         log.info("Pose estimated")
         new_frame_time = time()
         fps = 1/(new_frame_time-prev_frame_time)
         prev_frame_time = new_frame_time
-        all_concat = cat(frame, img_result, img_warp, traj_map, rect_visual,
+        all_concat = cat(frame, img_result, img_warp,
                          translation_world, rotation_world, translation, rotation, fps)
         log.info("Concatnated")
         cv.imshow("frame", all_concat)

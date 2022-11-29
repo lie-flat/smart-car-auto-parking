@@ -27,7 +27,7 @@ else:
 # INIT_TRANSLATION_WORLD = np.zeros(3, dtype=np.float32)
 
 
-def estimate_pose_and_draw(frame, traj_map, rect_visual):
+def estimate_pose_and_draw(frame):
     corners, ids, _rejected_points = aruco.detectMarkers(frame, dic)
     rotation_world = None
     rotation = None
@@ -49,9 +49,7 @@ def estimate_pose_and_draw(frame, traj_map, rect_visual):
                 TRANSLATION.reshape(3, 1)
             # print(f"ROT: {rotation_world}")
             # print(f"TRANS: {translation_world}")
-            pos = (int(translation_world[1] * MAP_FACTOR),
-                   int(translation_world[0] * MAP_FACTOR))
-            traj_map = cv.circle(traj_map, pos, 4, (0x6E, 0x00, 0xFF), 4)
+
             # print(world_map.shape)
 
-    return frame, traj_map, rect_visual, rotation, translation, rotation_world, translation_world
+    return frame, rotation, translation, rotation_world, translation_world

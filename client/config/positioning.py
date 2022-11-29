@@ -1,8 +1,8 @@
 import numpy as np
 import cv2 as cv
 
-OFFSET_X = 0.45
-OFFSET_Y = 0.65
+OFFSET_X = 0.433
+OFFSET_Y = 0.698
 OFFSET_Z = -1.05
 
 TRANS = np.array([[1, 0, 0, OFFSET_X], [0, 1, 0, OFFSET_Y],

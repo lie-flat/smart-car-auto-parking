@@ -3,7 +3,6 @@
 import cv2 as cv
 import numpy as np
 from PIL import ImageDraw, Image
-from math import atan2, sin, cos
 
 from ..camera.phone import PHONE_CAM_WIDTH, PHONE_CAM_HEIGHT
 from ..camera.camera import CAR_CAM_WIDTH, CAR_CAM_HEIGHT
@@ -53,11 +52,29 @@ CV_COLOR = (255, 0, 255)
 PLACEHOLDER = np.array([np.NaN, np.NaN, np.NaN])
 
 
+traj = 255 * np.ones((MAP_LEN_X, MAP_LEN_Y, 3), dtype="uint8")
+visual = 255 * np.ones((MAP_LEN_X, MAP_LEN_Y, 3), dtype="uint8")
+
+
 def null_coalesce(val, fallback):
     return val if val is not None else fallback
 
 
-def cat(phone_cam, road_mask, road_perspective, traj, visual, world_trans, world_rot, cam_trans, cam_rot, fps):
+p0x = 0
+p1x = 0
+p2x = 0
+p3x = 0
+p0y = 0
+p1y = 0
+p2y = 0
+p3y = 0
+
+
+WHITE = (255, 255, 255)
+RECT_BORDER_THICKNESS = 3
+
+
+def cat(phone_cam, road_mask, road_perspective, world_trans, world_rot, cam_trans, cam_rot, fps):
     """
             640           640               640
          +------------+-------------+-------------------+
@@ -72,7 +89,9 @@ def cat(phone_cam, road_mask, road_perspective, traj, visual, world_trans, world
       93 | text                                         |
          +----------------------------------------------+
     """
+    global p0x, p1x, p2x, p3x, p0y, p1y, p2y, p3y, traj, visual
     info_area.fill(255)
+    visual.fill(255)
     # Resize inputs
     road_mask = cv.resize(road_mask, (PHONE_CAM_WIDTH, PHONE_CAM_HEIGHT))
     road_perspective = cv.cvtColor(road_perspective, cv.COLOR_GRAY2BGR)
@@ -86,14 +105,16 @@ def cat(phone_cam, road_mask, road_perspective, traj, visual, world_trans, world
     # cos t -sin t
     # sin t  cos t
     if world_rot is not None:
+        cv.line(visual, (p0x, p0y), (p1x, p1y), WHITE, RECT_BORDER_THICKNESS)
+        cv.line(visual, (p0x, p0y), (p3x, p3y), WHITE, RECT_BORDER_THICKNESS)
+        cv.line(visual, (p1x, p1y), (p2x, p2y), WHITE, RECT_BORDER_THICKNESS)
+        cv.line(visual, (p3x, p3y), (p2x, p2y), WHITE, RECT_BORDER_THICKNESS)
+        # Then other components isn't None as well
         cost = world_rot[0, 0]
         sint = world_rot[1, 0]
 
-        p0x = world_trans[0].item()
-        p0y = world_trans[1].item()
-        # rect_x = world_trans[0].item() + CAR_DIAG * (sina*cost - cosa*sint) / 2
-        # rect_y = world_trans[1].item() + CAR_DIAG * (cosa*cost + sina*sint) / 2
-        # rect = cv.RotatedRect()
+        p0x = world_trans[1].item()
+        p0y = world_trans[0].item()
         p1x = int((p0x + CAR_WIDTH * cost) * MAP_FACTOR)
         p1y = int((p0y - CAR_WIDTH * sint) * MAP_FACTOR)
         p3x = int((p0x + CAR_HEIGHT * sint) * MAP_FACTOR)
@@ -104,12 +125,20 @@ def cat(phone_cam, road_mask, road_perspective, traj, visual, world_trans, world
         deltay = p1y - p0y
         p2x = p3x + deltax
         p2y = p3y + deltay
-        cv.line(visual, (p0x, p0y), (p1x, p1y), (0, 255, 0), 3)
-        cv.line(visual, (p0x, p0y), (p3x, p3y), (0, 0, 255), 3)
-        cv.line(visual, (p1x, p1y), (p2x, p2y), (255, 0, 0), 3)
-        cv.line(visual, (p3x, p3y), (p2x, p2y), (0, 0, 0), 3)
+        cv.line(visual, (p0x, p0y), (p1x, p1y),
+                (0, 255, 0), RECT_BORDER_THICKNESS)
+        cv.line(visual, (p0x, p0y), (p3x, p3y),
+                (0, 0, 255), RECT_BORDER_THICKNESS)
+        cv.line(visual, (p1x, p1y), (p2x, p2y),
+                (255, 0, 0), RECT_BORDER_THICKNESS)
+        cv.line(visual, (p3x, p3y), (p2x, p2y),
+                (0, 0, 0), RECT_BORDER_THICKNESS)
+        pos = (int((p0x + p2x)/2), int((p0y+p2y)/2))
+
+        visual = cv.circle(visual, pos, 4, (0x6E, 0x00, 0xFF), 4)
         # Convert mats to vecs
         world_rot, _ = cv.Rodrigues(world_rot)
+        traj = cv.circle(traj, pos, 4, (0x6E, 0x00, 0xFF), 6)
     else:
         world_rot = PLACEHOLDER
 
@@ -154,7 +183,7 @@ def cat(phone_cam, road_mask, road_perspective, traj, visual, world_trans, world
                CV_FONT, FONT_SCALE, (0, 255, 0), FONT_LINE_WIDTH, cv.LINE_AA)
     cv.putText(info_area,  f"{fps:.2f}", (550, 80),
                CV_FONT, FONT_SCALE, (0, 255, 0), FONT_LINE_WIDTH, cv.LINE_AA)
-    video_buffer[:PHONE_CAM_HEIGHT, :PHONE_CAM_WIDTH] = phone_cam
+    video_buffer[:PHONE_CAM_HEIGHT, :PHONE_CAM_WIDTH] = cv.flip(phone_cam, 1)
     video_buffer[:PHONE_CAM_HEIGHT,
                  PHONE_CAM_WIDTH:2 * PHONE_CAM_WIDTH] = road_mask
     video_buffer[:PHONE_CAM_HEIGHT, 2*PHONE_CAM_WIDTH:] = road_perspective
@@ -168,7 +197,4 @@ def cat(phone_cam, road_mask, road_perspective, traj, visual, world_trans, world
                  MAP_LEN_X, MAP_LEN_Y + SEPARATOR_WIDTH + MAP_LEN_Y: MAP_LEN_Y + SEPARATOR_WIDTH + MAP_LEN_Y + SEPARATOR_WIDTH] = SEPARATOR
     video_buffer[PHONE_CAM_HEIGHT:PHONE_CAM_HEIGHT + MAP_LEN_X,
                  MAP_LEN_Y + SEPARATOR_WIDTH + MAP_LEN_Y + SEPARATOR_WIDTH:] = info_area
-
-    # row1 = np.hstack([phone_cam, road_mask, road_perspective])
-    # row2 = np.hstack([traj, SEPARATOR, visual, SEPARATOR, info_area])
     return video_buffer
