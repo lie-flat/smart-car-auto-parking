@@ -1,6 +1,4 @@
 import cv2 as cv
-import numpy as np
-from ..config import BOARD_DEFINITION, MARKER_SIZE, ARUCO_TEST_BOARD_DEFINITION, ARUCO_TEST_BOARD_IDS
 from ..camera import get_phone_video
 
 vid = get_phone_video()

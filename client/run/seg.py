@@ -5,7 +5,7 @@ from logging import getLogger
 import cv2
 import random
 from functools import partial
-from ..ai import SegModel
+from ..ai.seg import SegModel
 
 def main():
     log = getLogger("main")
