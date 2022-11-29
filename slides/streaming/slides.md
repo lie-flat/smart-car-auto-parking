@@ -33,6 +33,7 @@ GitHub: https://github.com/lie-flat/smart-car-auto-parking
 - 昨天的直播回放（由于技术原因，没存下来最后那一部分）
 - 整体网络架构
 - 推流实现
+- 实时位姿测定与追踪实现
 
 ---
 layout: cover
