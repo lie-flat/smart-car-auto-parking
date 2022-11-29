@@ -30,7 +30,7 @@ else:
 
 
 def main():
-    global traj_map, rect_visual, img_result, img_warp
+    global img_result, img_warp
     cv.namedWindow("frame", cv.WINDOW_NORMAL)
     cv.setWindowProperty("frame", cv.WND_PROP_FULLSCREEN, cv.WINDOW_FULLSCREEN)
     vid = get_phone_video()

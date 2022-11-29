@@ -126,12 +126,11 @@ def estimate_pose_and_draw(frame):
             valid_cnt, rotation, translation = aruco.estimatePoseBoard(
                 corners, ids, BOARD, CAMERA_MAT, DIST_COEFFS, None, None)
             if valid_cnt > 0:
-                cv.drawFrameAxes(frame, CAMERA_MAT, DIST_COEFFS,
-                                 rotation, translation, 0.08, 6)
+                # 画出板子的位姿（用一个坐标系来表示）
+                cv.drawFrameAxes(frame, CAMERA_MAT, DIST_COEFFS, rotation, translation, 0.08, 6)
             rotation_camera, _ = cv.Rodrigues(rotation)
             rotation_world = ROTATION @ rotation_camera
-            translation_world = ROTATION @ translation + \
-                TRANSLATION.reshape(3, 1)
+            translation_world = ROTATION @ translation + TRANSLATION.reshape(3, 1)
     return frame, rotation, translation, rotation_world, translation_world
 ```
 
@@ -210,4 +209,55 @@ if world_rot is not None:
     world_rot, _ = cv.Rodrigues(world_rot)
     traj = cv.circle(traj, pos, 4, (0x6E, 0x00, 0xFF), 6)
 else: world_rot = PLACEHOLDER
+```
+
+---
+
+# 可视化
+client/cv/cat.py:func cat
+
+把位姿（位置和旋转）以文字的形式呈现在信息展示区.
+
+这样的代码有很多行，我只展示了其中一行。
+
+```python
+world_x = world_trans[0].item()
+cv.putText(info_area,  f"World X : {world_x:.8}", (10, 40), CV_FONT, FONT_SCALE, CV_COLOR, FONT_LINE_WIDTH, cv.LINE_AA)
+```
+
+把 FPS 显示出来：
+
+FPS 计算相关代码参见 `client/__main__.py`
+
+
+```python
+cv.putText(info_area,  "FPS", (550, 40), CV_FONT, FONT_SCALE, (0, 255, 0), FONT_LINE_WIDTH, cv.LINE_AA)
+cv.putText(info_area,  f"{fps:.2f}", (550, 80), CV_FONT, FONT_SCALE, (0, 255, 0), FONT_LINE_WIDTH, cv.LINE_AA)
+```
+
+---
+# 主程序
+client/\_\_main\_\_.py
+
+```python
+def main():
+    global img_result, img_warp
+    cv.namedWindow("frame", cv.WINDOW_NORMAL)
+    cv.setWindowProperty("frame", cv.WND_PROP_FULLSCREEN, cv.WINDOW_FULLSCREEN)
+    vid = get_phone_video()
+    prev_frame_time = 0
+    new_frame_time = 0
+    while True:
+        ret, frame = vid.read()
+        if not ret:
+            raise Exception("Failed to read from phone.")
+        frame, rotation, translation, rotation_world, translation_world = estimate_pose_and_draw(frame)
+        new_frame_time = time()
+        fps = 1/(new_frame_time-prev_frame_time)
+        prev_frame_time = new_frame_time
+        all_concat = cat(frame, img_result, img_warp,
+                         translation_world, rotation_world, translation, rotation, fps)
+        cv.imshow("frame", all_concat)
+        if cv.waitKey(1) & 0xFF == ord('q'):
+            break
 ```
