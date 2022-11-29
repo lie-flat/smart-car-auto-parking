@@ -201,3 +201,54 @@ img_warp = np.ndarray( shape=IMG_WARP_SHAPE, \
   - 使用 Python 标准库创建共享内存
   - 从裸共享内存构造 Numpy 数组，将初始数据写入进去。
 - 调用上面的函数创建两块共享内存，创建对应的数组
+
+---
+
+# 直播推流的实现
+直播流的拼接
+
+```python
+
+def cat(phone_cam, road_mask, road_perspective, world_trans, world_rot, cam_trans, cam_rot, fps):
+    """
+            640           640               640
+         +------------+-------------+-------------------+
+      4  | marker det | road mask   | road(perspective) |
+      8  | i:480x640  | i:240x320   | i:240x320x1       |
+      0  | 480x640    | 480x640     | 480x640           |
+         +------------+-+------------+-+----------------+
+      5  | trajectory |S|rect visual |S|info display    |
+      0  | i: 507x605 |1|i: 507x605  |1|xyz             |
+      7  | o: 507x605 |0|o: 507x605  |0|rotation:       |
+         +------------+-+------------+-+-----------------+
+      93 | text                                         |
+         +----------------------------------------------+
+    """
+    ...
+```
+
+图中的 ASCII Art 直观地显示了拼接的方式。
+
+---
+
+video_buffer 是一个全局变量，存储当前直播流画面。
+
+我们在把各种可视化做完之后，将它们通过切片赋值的方式写入到当前直播流画面中。
+
+之前在这个地方我们没有用全局变量和切片赋值. 我们之前用 `np.hstack` 和 `np.vstack` 将各个部分拼起来，这会导致在每一帧中都有不必要的内存分配/释放，实测效率比现在的实现要低。
+
+```python
+# global scope
+video_buffer = np.ones((VIDEO_HEIGHT, VIDEO_WIDTH, 3),
+                       dtype=np.uint8) * 255
+# In func cat
+video_buffer[:PHONE_CAM_HEIGHT, :PHONE_CAM_WIDTH] = cv.flip(phone_cam, 1)
+video_buffer[:PHONE_CAM_HEIGHT,
+              PHONE_CAM_WIDTH:2 * PHONE_CAM_WIDTH] = road_mask
+video_buffer[:PHONE_CAM_HEIGHT, 2*PHONE_CAM_WIDTH:] = road_perspective
+video_buffer[PHONE_CAM_HEIGHT:PHONE_CAM_HEIGHT +
+              MAP_LEN_X, :MAP_LEN_Y] = traj
+video_buffer[PHONE_CAM_HEIGHT:PHONE_CAM_HEIGHT +
+              MAP_LEN_X, MAP_LEN_Y:MAP_LEN_Y + SEPARATOR_WIDTH] = SEPARATOR
+```
+
