@@ -1,6 +1,6 @@
 # smart-car-auto-parking
 
-20级数科班 2022-2023年秋冬季大作业
+20 级数科班 2022-2023 年秋冬季大作业
 
 第一阶段成果：基于 ArUco Marker Board 的小车实时位姿测定和可视化（单目）
 
@@ -20,9 +20,13 @@ B 站视频展示和讲解： TODO
 
 # 讲解
 
-您可以看 B 站视频。若您像 kxxt 一样更 prefer 文字版的讲解，
+您可以看 B 站视频。若您像 kxxt 一样更 prefer 文字版的讲解，也可以看 slides 目录下的讲解幻灯片。
 
 # Reference
 
 - https://markhedleyjones.com/projects/calibration-checkerboard-collection
 - https://calib.io/pages/camera-calibration-pattern-generator
+- https://docs.opencv.org/4.6.0/d5/dae/tutorial_aruco_detection.html
+- https://docs.opencv.org/4.6.0/db/da9/tutorial_aruco_board_detection.html
+- https://docs.opencv.org/4.6.0/df/d4a/tutorial_charuco_detection.html
+- https://docs.opencv.org/4.6.0/d1/dcb/tutorial_aruco_faq.html
