@@ -11,6 +11,8 @@ from ..config import MAP_LEN_Y, MAP_LEN_X, CHINESE_FONT
 VIDEO_WIDTH = 1920
 VIDEO_HEIGHT = 1080
 
+video_buffer = np.ones((VIDEO_HEIGHT, VIDEO_WIDTH, 3),
+                       dtype=np.uint8) * 255
 
 SEPARATOR_WIDTH = 10
 SEPARATOR_HEIGHT = MAP_LEN_X
@@ -19,7 +21,7 @@ SEPARATOR = np.ones((SEPARATOR_HEIGHT, SEPARATOR_WIDTH, 3),
 
 INFO_AREA_HEIGHT = MAP_LEN_X
 INFO_AREA_WIDTH = VIDEO_WIDTH - 2 * MAP_LEN_Y - 2 * SEPARATOR_WIDTH
-INFO_AREA = np.ones(
+info_area = np.ones(
     (INFO_AREA_HEIGHT, INFO_AREA_WIDTH, 3), dtype=np.uint8) * 255
 
 TEXT_AREA_HEIGHT = VIDEO_HEIGHT - PHONE_CAM_HEIGHT - MAP_LEN_X
@@ -38,6 +40,8 @@ draw.text((10, 45),  "*: 因为 ESP32 CAM 网络延迟问题，小车摄像头�
 draw.text((1500, 45),  "山东大学（威海）,数科班",
           font=CHINESE_FONT, fill=(0xC5, 0xFF, 0x00))
 TEXT_AREA = np.array(img_pil)
+
+video_buffer[-TEXT_AREA_HEIGHT:, :] = TEXT_AREA
 
 
 FONT_SCALE = 1.3
@@ -67,7 +71,7 @@ def cat(phone_cam, road_mask, road_perspective, traj, visual, world_trans, world
       93 | text                                         |
          +----------------------------------------------+
     """
-    info_area = INFO_AREA.copy()
+    info_area.fill(255)
     # Resize inputs
     road_mask = cv.resize(road_mask, (PHONE_CAM_WIDTH, PHONE_CAM_HEIGHT))
     road_perspective = cv.cvtColor(road_perspective, cv.COLOR_GRAY2BGR)
@@ -122,7 +126,21 @@ def cat(phone_cam, road_mask, road_perspective, traj, visual, world_trans, world
                CV_FONT, FONT_SCALE, (0, 255, 0), FONT_LINE_WIDTH, cv.LINE_AA)
     cv.putText(info_area,  f"{fps:.2f}", (550, 80),
                CV_FONT, FONT_SCALE, (0, 255, 0), FONT_LINE_WIDTH, cv.LINE_AA)
+    video_buffer[:PHONE_CAM_HEIGHT, :PHONE_CAM_WIDTH] = phone_cam
+    video_buffer[:PHONE_CAM_HEIGHT,
+                 PHONE_CAM_WIDTH:2 * PHONE_CAM_WIDTH] = road_mask
+    video_buffer[:PHONE_CAM_HEIGHT, 2*PHONE_CAM_WIDTH:] = road_perspective
+    video_buffer[PHONE_CAM_HEIGHT:PHONE_CAM_HEIGHT +
+                 MAP_LEN_X, :MAP_LEN_Y] = traj
+    video_buffer[PHONE_CAM_HEIGHT:PHONE_CAM_HEIGHT +
+                 MAP_LEN_X, MAP_LEN_Y:MAP_LEN_Y + SEPARATOR_WIDTH] = SEPARATOR
+    video_buffer[PHONE_CAM_HEIGHT:PHONE_CAM_HEIGHT +
+                 MAP_LEN_X, MAP_LEN_Y + SEPARATOR_WIDTH: MAP_LEN_Y + SEPARATOR_WIDTH + MAP_LEN_Y] = visual
+    video_buffer[PHONE_CAM_HEIGHT:PHONE_CAM_HEIGHT +
+                 MAP_LEN_X, MAP_LEN_Y + SEPARATOR_WIDTH + MAP_LEN_Y: MAP_LEN_Y + SEPARATOR_WIDTH + MAP_LEN_Y + SEPARATOR_WIDTH] = SEPARATOR
+    video_buffer[PHONE_CAM_HEIGHT:PHONE_CAM_HEIGHT + MAP_LEN_X,
+                 MAP_LEN_Y + SEPARATOR_WIDTH + MAP_LEN_Y + SEPARATOR_WIDTH:] = info_area
 
-    row1 = np.hstack([phone_cam, road_mask, road_perspective])
-    row2 = np.hstack([traj, SEPARATOR, visual, SEPARATOR, info_area])
-    return np.vstack([row1, row2, TEXT_AREA])
+    # row1 = np.hstack([phone_cam, road_mask, road_perspective])
+    # row2 = np.hstack([traj, SEPARATOR, visual, SEPARATOR, info_area])
+    return video_buffer
