@@ -78,6 +78,34 @@ client
 
 ---
 
+# 主程序
+client/\_\_main\_\_.py
+
+```python
+def main():
+    global img_result, img_warp
+    cv.namedWindow("frame", cv.WINDOW_NORMAL)
+    cv.setWindowProperty("frame", cv.WND_PROP_FULLSCREEN, cv.WINDOW_FULLSCREEN)
+    vid = get_phone_video()
+    prev_frame_time = 0
+    new_frame_time = 0
+    while True:
+        ret, frame = vid.read()
+        if not ret:
+            raise Exception("Failed to read from phone.")
+        frame, rotation, translation, rotation_world, translation_world = estimate_pose_and_draw(frame)
+        new_frame_time = time()
+        fps = 1/(new_frame_time-prev_frame_time)
+        prev_frame_time = new_frame_time
+        all_concat = cat(frame, img_result, img_warp,
+                         translation_world, rotation_world, translation, rotation, fps)
+        cv.imshow("frame", all_concat)
+        if cv.waitKey(1) & 0xFF == ord('q'):
+            break
+```
+
+---
+
 # 相机标定
 client/run/calibration_collector.py
 
@@ -235,29 +263,3 @@ cv.putText(info_area,  "FPS", (550, 40), CV_FONT, FONT_SCALE, (0, 255, 0), FONT_
 cv.putText(info_area,  f"{fps:.2f}", (550, 80), CV_FONT, FONT_SCALE, (0, 255, 0), FONT_LINE_WIDTH, cv.LINE_AA)
 ```
 
----
-# 主程序
-client/\_\_main\_\_.py
-
-```python
-def main():
-    global img_result, img_warp
-    cv.namedWindow("frame", cv.WINDOW_NORMAL)
-    cv.setWindowProperty("frame", cv.WND_PROP_FULLSCREEN, cv.WINDOW_FULLSCREEN)
-    vid = get_phone_video()
-    prev_frame_time = 0
-    new_frame_time = 0
-    while True:
-        ret, frame = vid.read()
-        if not ret:
-            raise Exception("Failed to read from phone.")
-        frame, rotation, translation, rotation_world, translation_world = estimate_pose_and_draw(frame)
-        new_frame_time = time()
-        fps = 1/(new_frame_time-prev_frame_time)
-        prev_frame_time = new_frame_time
-        all_concat = cat(frame, img_result, img_warp,
-                         translation_world, rotation_world, translation, rotation, fps)
-        cv.imshow("frame", all_concat)
-        if cv.waitKey(1) & 0xFF == ord('q'):
-            break
-```
