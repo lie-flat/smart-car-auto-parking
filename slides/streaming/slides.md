@@ -99,3 +99,105 @@ layout: two-cols
 - 所以现在我们的电脑没有联网，无法直播。那怎么拌呢？北衡楼 17 楼空地没有网线接口。我们只好找了另一部手机，
 使用在 2022 年仍然不过时的 USB 2.0 协议连接到电脑，让手机给电脑 USB 共享网络。
 - 万事大吉，我们终于可以开播了。（在这里特别吐槽一下某些手机厂商不给手机上 USB 3.0 的做法）
+
+---
+layout: cover
+background: bg.jpg
+---
+# 直播推流的实现
+
+---
+
+# 直播推流的实现
+B 站推流
+
+我们在 OpenCV 里创建了一个全屏显示的无边框窗口。
+
+```python
+cv.namedWindow("frame", cv.WINDOW_NORMAL)
+cv.setWindowProperty("frame", cv.WND_PROP_FULLSCREEN, cv.WINDOW_FULLSCREEN)
+```
+
+我们把手机摄像头俯拍的画面，小车摄像头的画面叠加上道路分割的蒙板，分割出来的道路做过视角变换后的可视化，全局地图上小车轨迹的可视化、全局地图上小车当前位姿的可视化、文字形式的小车当前位姿信息、当前 FPS 还有部分宣传文字都放到这一个全屏画布上。
+
+然后在 B 站直播页面选择直播源为当前整个屏幕，即可向 B 站推流。
+
+这样同时解决了一个问题：
+
+我们的 FPS 是一直在变的，如果直接将 OpenCV 的流推给 B 站，会导致我们的直播流有时快，有时慢。
+
+而我们选择将当前屏幕作为直播流的话就不会出现这个问题。
+
+---
+layout: two-cols
+---
+# 直播推流的实现
+快慢视频源的整合
+
+众所周知，AI Thinker ESP32 Cam 是一款物美价廉的物联网摄像头。我们在电脑上通过网络请求读取到这个摄像头的一帧画面需要花上 0.1s 到 1s 的时间。
+
+如果我们把所有的代码都放到一个 Python 进程里，我们的直播的刷新率会不可避免的被这个廉价摄像头卡脖子（Bottleneck）。
+
+为了解决这个问题，我们创新性的将代码拆分成两部分。上次大作业的代码负责了道路分割和交通标志识别等功能，我们把它放到 `client.run.__main__` 中。这次大作业的代码负责了小车位姿测定和追踪和 OpenCV 画面拼接等功能，我们把它放到 `client.__main__` 中。
+
+我们让上一次大作业的程序通过共享内存（Shared Memory) 的方式把需要展示的画面与本次大作业的程序共享。
+
+::right::
+
+### `client.__main__`
+
+```python
+
+img_result_shm = SharedMemory(name=SHM_IMG_RESULT_NAME)
+img_result = np.ndarray(IMG_RESULT_SHAPE, dtype=SHM_NP_DTYPE,
+                        buffer=img_result_shm.buf)
+img_warp_shm = SharedMemory(name=SHM_IMG_WARP_NAME)
+img_warp = np.ndarray(IMG_WARP_SHAPE, dtype=SHM_NP_DTYPE,
+                      buffer=img_warp_shm.buf)
+
+```
+
+- 共享内存的读取方
+- 遵循软件工程的原理，我们把读取方和写入方的公共参数（如 `IMG_WARP_SHAPE`、`SHM_NP_DTYPE`、 `SHM_IMG_RESULT_NAME`）重构进了一个子模块中。
+- 从裸共享内存构造 Numpy 数组，这使得我们能直接在拼接直播流时像使用正常 Numpy 数组一样使用它。
+
+---
+layout: two-cols
+---
+# 直播推流的实现
+快慢视频源的整合
+
+在我们将一个程序拆分成两个程序之后。我们也就从单进程转向了多进程。（由于 Global Interpreter Lock，多线程 Python 程序并不能合理利用多核处理器的优势）
+
+程序拆分之后，我们的整个直播流的帧率从大约 1 FPS 飙升到了大约 20 FPS,最高的时候能到 40 FPS. 也就是说，我们通过多进程将帧率提升了 19 倍。
+
+多进程解决了快视频源（手机摄像头和后续的位姿测定可视化）和慢视频源（ESP32CAM 及后续的道路分割、交通标志检测）同步处理时的直播流刷新率被限制到大概 1 FPS 左右的问题。
+
+同时，多进程也使得（道路分割和交通标志检测）与（小车实时位姿测定与追踪）能够同时进行，极大地提高了程序的效率。
+
+::right::
+
+### `client.run.__main__`
+
+```python
+def create_shared_memory_nparray(data, name):
+    d_size = np.dtype(SHM_NP_DTYPE).itemsize * np.prod(data.shape)
+    shm = SharedMemory(create=True, size=d_size, name=name)
+    dst = np.ndarray(shape=data.shape, dtype=SHM_NP_DTYPE, buffer=shm.buf)
+    dst[:] = data[:]
+    return shm
+img_result_shm = create_shared_memory_nparray(np.zeros(
+IMG_RESULT_SHAPE, dtype=SHM_NP_DTYPE), SHM_IMG_RESULT_NAME)
+img_warp_shm = create_shared_memory_nparray(np.zeros(
+    IMG_WARP_SHAPE, dtype=SHM_NP_DTYPE), SHM_IMG_WARP_NAME)
+img_result = np.ndarray(shape=IMG_RESULT_SHAPE, \
+    dtype=SHM_NP_DTYPE, buffer=img_result_shm.buf)
+img_warp = np.ndarray( shape=IMG_WARP_SHAPE, \
+    dtype=SHM_NP_DTYPE, buffer=img_warp_shm.buf)
+```
+
+- 写入方的共享内存代码
+- 创建共享内存的函数
+  - 使用 Python 标准库创建共享内存
+  - 从裸共享内存构造 Numpy 数组，将初始数据写入进去。
+- 调用上面的函数创建两块共享内存，创建对应的数组
