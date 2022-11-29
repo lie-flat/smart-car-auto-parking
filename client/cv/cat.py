@@ -3,10 +3,11 @@
 import cv2 as cv
 import numpy as np
 from PIL import ImageDraw, Image
+from math import atan2, sin, cos
 
 from ..camera.phone import PHONE_CAM_WIDTH, PHONE_CAM_HEIGHT
 from ..camera.camera import CAR_CAM_WIDTH, CAR_CAM_HEIGHT
-from ..config import MAP_LEN_Y, MAP_LEN_X, CHINESE_FONT
+from ..config import MAP_LEN_Y, MAP_LEN_X, CHINESE_FONT, MAP_FACTOR, CAR_HEIGHT, CAR_WIDTH
 
 VIDEO_WIDTH = 1920
 VIDEO_HEIGHT = 1080
@@ -80,11 +81,38 @@ def cat(phone_cam, road_mask, road_perspective, traj, visual, world_trans, world
     # Null coalescing
     world_trans = null_coalesce(world_trans, PLACEHOLDER)
     cam_trans = null_coalesce(cam_trans, PLACEHOLDER)
-    world_rot = null_coalesce(world_rot, PLACEHOLDER)
     cam_rot = null_coalesce(cam_rot, PLACEHOLDER)
-    # Convert mats to vecs
-    if world_rot.size > 3:
+    # Calc rect center
+    # cos t -sin t
+    # sin t  cos t
+    if world_rot is not None:
+        cost = world_rot[0, 0]
+        sint = world_rot[1, 0]
+
+        p0x = world_trans[0].item()
+        p0y = world_trans[1].item()
+        # rect_x = world_trans[0].item() + CAR_DIAG * (sina*cost - cosa*sint) / 2
+        # rect_y = world_trans[1].item() + CAR_DIAG * (cosa*cost + sina*sint) / 2
+        # rect = cv.RotatedRect()
+        p1x = int((p0x + CAR_WIDTH * cost) * MAP_FACTOR)
+        p1y = int((p0y - CAR_WIDTH * sint) * MAP_FACTOR)
+        p3x = int((p0x + CAR_HEIGHT * sint) * MAP_FACTOR)
+        p3y = int((p0y + CAR_HEIGHT * cost) * MAP_FACTOR)
+        p0x = int(MAP_FACTOR*p0x)
+        p0y = int(MAP_FACTOR*p0y)
+        deltax = p1x - p0x
+        deltay = p1y - p0y
+        p2x = p3x + deltax
+        p2y = p3y + deltay
+        cv.line(visual, (p0x, p0y), (p1x, p1y), (0, 255, 0), 3)
+        cv.line(visual, (p0x, p0y), (p3x, p3y), (0, 0, 255), 3)
+        cv.line(visual, (p1x, p1y), (p2x, p2y), (255, 0, 0), 3)
+        cv.line(visual, (p3x, p3y), (p2x, p2y), (0, 0, 0), 3)
+        # Convert mats to vecs
         world_rot, _ = cv.Rodrigues(world_rot)
+    else:
+        world_rot = PLACEHOLDER
+
     # get numbers from vecs
     world_x = world_trans[0].item()
     world_y = world_trans[1].item()
