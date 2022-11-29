@@ -1,9 +1,6 @@
-from ..camera  import get_phone_video
+from ..camera import get_phone_video
 import numpy as np
 import cv2 as cv
-
-dic = cv.aruco.getPredefinedDictionary(cv.aruco.DICT_ARUCO_ORIGINAL)
-
 
 
 # termination criteria
@@ -36,5 +33,6 @@ while True:
         cv.drawChessboardCorners(img, (10, 7), corners2, ret)
         cv.imshow("I", img)
         i += 1
-        cv.waitKey(2)
+        if cv.waitKey(2) & 0xff == ord('q'):
+            break
 cv.destroyAllWindows()
