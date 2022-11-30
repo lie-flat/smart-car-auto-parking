@@ -10,7 +10,7 @@
 
 需要使用如下软件将安卓手机变成 Web Cam: [DroidCam](https://www.dev47apps.com/)。详细信息请见[kxxt 的博客](https://www.kxxt.dev/blog/use-android-devices-as-cameras-in-opencv/)
 
-B 站视频展示和讲解： TODO
+B 站视频展示和讲解： https://www.bilibili.com/video/BV1N24y1y7Zt/
 
 # 小车
 
