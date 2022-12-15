@@ -1,0 +1,38 @@
+# Measurements of the car by kxxt
+
+[car]
+version = "1.0"
+unit = "brick"
+brickSize = "8"
+
+[car.board]
+# Aruco 板子
+unit = "millimeter"
+x = 165
+y = 130
+
+[car.base]
+# 车的基座部分，不带轮子，不带外设
+unit = "brick"
+x = 22
+z = 13
+y = 12
+
+[car.wheel]
+# 轮子的参数
+unit = "millimeter"
+radius = 60
+
+[car.wheel.front]
+# 前轮相对基座的位置
+unit = "brick"
+x = 2.5        # 相对基座前面
+z = 1.5        # 相对基座侧面
+y = 2.5        # 相对基座底面
+
+[car.wheel.back]
+# 后轮相对基座的位置
+unit = "brick"
+x = 1.5        # 相对基座后面
+z = 1.5        # 相对基座侧面
+y = 2.5        # 相对基座底面
