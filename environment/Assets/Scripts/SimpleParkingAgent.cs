@@ -13,7 +13,11 @@ public class SimpleParkingAgent : Agent
     public GameObject Target;
     private MeshCollider targetMesh;
     private Transform targetTransform;
+    public float targetX = -0.068f;
+    public float targetZ = -0.056f;
+    public float targetR = -30f;
 
+    [SerializeField] private float distance = float.PositiveInfinity;
     // Start is called before the first frame update
     void Start()
     {
@@ -26,7 +30,7 @@ public class SimpleParkingAgent : Agent
     public override void OnEpisodeBegin()
     {
         // Random spawn
-        transform.position = new Vector3(
+        transform.localPosition = new Vector3(
             // Spawn on 80% center area of the map
             0.8f * (Random.value - 0.5f) * Parameters.MAP_WIDTH,
             0.04f,
@@ -38,8 +42,8 @@ public class SimpleParkingAgent : Agent
     public override void CollectObservations(VectorSensor sensor)
     {
         // Target and Agent positions
-        sensor.AddObservation(targetTransform.localPosition.x);
-        sensor.AddObservation(targetTransform.localPosition.z);
+        sensor.AddObservation(targetX);
+        sensor.AddObservation(targetZ);
         sensor.AddObservation(transform.localPosition.x);
         sensor.AddObservation(transform.localPosition.z);
 
@@ -58,23 +62,30 @@ public class SimpleParkingAgent : Agent
         var motor = values[1];
         // Debug.Log($"{steering}, {motor}");
         carController.Control(steering, motor);
-        if (Mathf.Sqrt(
-            Mathf.Pow(transform.localPosition.x - targetTransform.localPosition.x, 2f) +
-            Mathf.Pow(transform.localPosition.z - targetTransform.localPosition.z, 2f)) < 0.01
-            &&
-            Mathf.Abs(transform.localEulerAngles.y - 30) < 0.1)
+        distance = Mathf.Sqrt(
+            Mathf.Pow(transform.localPosition.x - targetX, 2f) +
+            Mathf.Pow(transform.localPosition.z - targetZ, 2f));
+        if (distance < 0.03
+            // && Mathf.Abs(transform.localEulerAngles.y - 30) < 0.1
+            )
         {
             SetReward(1f);
             EndEpisode();
         }
-        else if (transform.localPosition.y < 0.08)
+        else if (distance > 1)
         {
+            // Too far
+            AddReward(-0.001f * distance);
+        }
+        else if (transform.localPosition.y < 0)
+        {
+            // Fall
             SetReward(-1f);
             EndEpisode();
         }
         else
         {
-            AddReward(-0.0001f);
+            AddReward(-0.00001f);
         }
     }
 
