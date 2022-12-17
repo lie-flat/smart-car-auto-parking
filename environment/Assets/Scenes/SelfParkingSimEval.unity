@@ -225,7 +225,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: bbb235fff4f48426b863b36058ab66d2, type: 2}
+  - {fileID: 2100000, guid: d7f5a447fc38c9887b9dc09c87c48935, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -901,7 +901,6 @@ MonoBehaviour:
   hasUpgradedFromAgentParameters: 1
   MaxStep: 9000
   Target: {fileID: 1096077174}
-  motorMultipler: 80
 --- !u!114 &2086159130
 MonoBehaviour:
   m_ObjectHideFlags: 0

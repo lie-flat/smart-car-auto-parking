@@ -27,9 +27,10 @@ public class SimpleParkingAgent : Agent
     {
         // Random spawn
         transform.position = new Vector3(
-            (Random.value - 0.5f) * Parameters.MAP_WIDTH,
+            // Spawn on 80% center area of the map
+            0.8f * (Random.value - 0.5f) * Parameters.MAP_WIDTH,
             0.04f,
-            (Random.value - 0.5f) * Parameters.MAP_HEIGHT
+            0.8f * (Random.value - 0.5f) * Parameters.MAP_HEIGHT
         );
         transform.rotation = Quaternion.Euler(0, Random.value * 360, 0);
     }
@@ -66,7 +67,7 @@ public class SimpleParkingAgent : Agent
             SetReward(1f);
             EndEpisode();
         }
-        else if (transform.localPosition.y < -0.1)
+        else if (transform.localPosition.y < 0.08)
         {
             SetReward(-1f);
             EndEpisode();
