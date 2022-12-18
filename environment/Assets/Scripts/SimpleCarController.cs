@@ -8,10 +8,17 @@ public class SimpleCarController : MonoBehaviour
     public float maxMotorTorque; // maximum torque the motor can apply to wheel
     public float maxSteeringAngle; // maximum steer angle the wheel can have
 
+    private float motorVal = 0, steeringVal = 0, motor = 0, steering = 0;
+
+    public float Motor { get => motor; }
+    public float Steering { get => steering; }
+
     public void Control(float steering, float motor)
     {
-        float motorVal = maxMotorTorque * motor;
-        float steeringVal = maxSteeringAngle * steering;
+        this.motor = motor;
+        this.steering = steering;
+        motorVal = maxMotorTorque * motor;
+        steeringVal = maxSteeringAngle * steering;
         // Debug.Log($"Steering: {steering}, motor: {motorVal}")
         foreach (AxleInfo axleInfo in axleInfos)
         {

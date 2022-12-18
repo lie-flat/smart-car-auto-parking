@@ -17,6 +17,15 @@ public class SimpleParkingAgent : Agent
     public float targetZ = -0.056f;
     public float targetR = -30f;
 
+    public uint MaxSteps = 10000;
+    private void CruiseControl(float steering, float motor)
+    {
+        var deltaMotor = carController.Motor < motor ? 0.1f : -0.1f;
+        var deltaSteering = carController.Steering < steering ? 0.1f : -0.1f;
+
+        carController.Control(carController.Steering + deltaSteering, carController.Motor + deltaMotor);
+
+    }
     [SerializeField] private float distance = float.PositiveInfinity;
     // Start is called before the first frame update
     void Start()
@@ -30,29 +39,50 @@ public class SimpleParkingAgent : Agent
     public override void OnEpisodeBegin()
     {
         // Random spawn
-        transform.localPosition = new Vector3(
-            // Spawn on 80% center area of the map
-            0.8f * (Random.value - 0.5f) * Parameters.MAP_WIDTH,
-            0.04f,
-            0.8f * (Random.value - 0.5f) * Parameters.MAP_HEIGHT
-        );
-        transform.rotation = Quaternion.Euler(0, Random.value * 360, 0);
+        // transform.localPosition = new Vector3(
+        //     // Spawn on 80% center area of the map
+        //     0.8f * (Random.value - 0.5f) * Parameters.MAP_WIDTH,
+        //     0.04f,
+        //     0.8f * (Random.value - 0.5f) * Parameters.MAP_HEIGHT
+        // );
+        // transform.rotation = Quaternion.Euler(0, Random.value * 360, 0);
+        // Determinastic spawn
+        transform.localPosition = new Vector3(0.25f * Parameters.MAP_WIDTH, 0.1f, 0.3f * Parameters.MAP_HEIGHT);
+        transform.localRotation = Quaternion.Euler(0, 90, 0);
+        rBody.velocity = Vector3.zero;
+        rBody.angularVelocity = Vector3.zero;
     }
 
     public override void CollectObservations(VectorSensor sensor)
     {
-        // Target and Agent positions
-        sensor.AddObservation(targetX);
-        sensor.AddObservation(targetZ);
+        // Agent positions
         sensor.AddObservation(transform.localPosition.x);
         sensor.AddObservation(transform.localPosition.z);
 
         // Agent rotation
-        sensor.AddObservation(transform.localEulerAngles.y / (2 * Mathf.PI));
+        sensor.AddObservation(Mathf.Sin(transform.localEulerAngles.y));
+        sensor.AddObservation(Mathf.Cos(transform.localEulerAngles.y));
 
         // Agent velocity
         sensor.AddObservation(rBody.velocity.x);
         sensor.AddObservation(rBody.velocity.z);
+
+        // Agent Angular velocity
+        sensor.AddObservation(rBody.angularVelocity.y);
+        // Steering & Motor
+        sensor.AddObservation(carController.Steering);
+        sensor.AddObservation(carController.Motor);
+    }
+
+    public void OnCollisionEnter(Collision collision)
+    {
+        if (collision.gameObject.tag == "Wall")
+        {
+            Debug.Log("Pong!");
+            AddReward(-2f);
+            // EpisodeInterrupted();
+            // EndEpisode();
+        }
     }
 
     public override void OnActionReceived(ActionBuffers actions)
@@ -61,23 +91,37 @@ public class SimpleParkingAgent : Agent
         var steering = values[0];
         var motor = values[1];
         // Debug.Log($"{steering}, {motor}");
+        // CruiseControl(steering, motor);
         carController.Control(steering, motor);
         distance = Mathf.Sqrt(
             Mathf.Pow(transform.localPosition.x - targetX, 2f) +
             Mathf.Pow(transform.localPosition.z - targetZ, 2f));
-        if (distance < 0.03
-            // && Mathf.Abs(transform.localEulerAngles.y - 30) < 0.1
-            )
+        if (StepCount > 10000)
         {
-            SetReward(1f);
+            // MaxStep exceeded!
+            SetReward(-1f);
+            Debug.Log($"摸鱼警告!, CR: {GetCumulativeReward()}");
+            EpisodeInterrupted();
+        }
+        else if (distance < 0.05)
+        {
+            var angleDiff = Mathf.Abs(transform.localEulerAngles.y - (-30));
+            // Reward is 2^(-deltaTheta)
+            // Thus when deltaTheta -> 0, reward -> 1
+            //      when deltaTheta >> 0, reward -> 0
+            // angleDiff = Mathf.Deg2Rad * angleDiff;
+            // AddReward(f);
+            AddReward(100 * Mathf.Pow(2, -angleDiff));
+            Debug.LogWarning($"卷起来了, 花了 {StepCount} 步，收益{GetCumulativeReward()}！");
             EndEpisode();
         }
-        else if (distance > 1)
+        else if (distance < 0.3666)
         {
-            // Too far
-            AddReward(-0.001f * distance);
+            var reward = Mathf.Pow(2, -50 * distance);
+            var discount = (MaxSteps - StepCount) / (float)MaxSteps;
+            AddReward(discount * reward);
         }
-        else if (transform.localPosition.y < 0)
+        else if (transform.localPosition.y < 0.05)
         {
             // Fall
             SetReward(-1f);
@@ -85,7 +129,9 @@ public class SimpleParkingAgent : Agent
         }
         else
         {
-            AddReward(-0.00001f);
+            var disReward = -0.01f * distance;
+            var stepReward = -Mathf.Pow(2, (StepCount - MaxSteps) / 1000);
+            AddReward(Mathf.Min(disReward, stepReward));
         }
     }
 
