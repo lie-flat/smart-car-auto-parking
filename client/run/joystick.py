@@ -80,7 +80,8 @@ while keepPlaying:
     speed = clamp(speed, -100, 100)
     # print(f"Servo = {servo}")
     motorA = 0 if speed < 0 else speed
-    motorB = 0 if speed > 0 else speed
+    motorB = 0 if speed > 0 else -speed
+    log.info(f"servo={servo}, motor A:{motorA}, B:{motorB}")
     control(servo=servo, motorA=motorA, motorB=motorB)
     if should_buzz:
         should_buzz = False
