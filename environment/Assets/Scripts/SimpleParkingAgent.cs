@@ -105,14 +105,14 @@ public class SimpleParkingAgent : Agent
         }
         else if (distance < 0.05)
         {
-            var angleDiff = Mathf.Abs(transform.localEulerAngles.y - (-30));
+            // var angleDiff = Mathf.Abs(transform.localEulerAngles.y - (-30));
             // Reward is 2^(-deltaTheta)
             // Thus when deltaTheta -> 0, reward -> 1
             //      when deltaTheta >> 0, reward -> 0
             // angleDiff = Mathf.Deg2Rad * angleDiff;
             // AddReward(f);
             // var finalReward = 100 * Mathf.Pow(2, -angleDiff / 10);
-            var finalReward = 100f * (360f - angleDiff) / 360f;
+            var finalReward = 100f;// * (360f - angleDiff) / 360f;
             AddReward(finalReward);
             Debug.LogWarning($"卷起来了, 花了 {StepCount} 步，角度{transform.localEulerAngles.y}，收益{GetCumulativeReward()}！最终激励：{finalReward}");
             EndEpisode();
