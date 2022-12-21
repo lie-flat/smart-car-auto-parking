@@ -113,7 +113,7 @@ class ParkingLotEnv(gym.Env):
 
     def _load_env(self):
         """
-        Load frozen objects
+        Load 3d objects
         """
         # 加载地面
         self.ground = p.loadURDF(
@@ -272,8 +272,8 @@ class ParkingLotEnv(gym.Env):
 
         self.desired_goal = np.array([self.goal[0], self.goal[1], 0.0, 0.0, np.cos(
             self.target_orientation), np.sin(self.target_orientation)])
-        self.car = Car(self.client, basePosition=self.basePosition, baseOrientationEuler=self.start_orientation,
-                       carType=self.car_type, action_steps=self.action_steps)
+        self.car = Car(self.client, base_position=self.basePosition, base_orientation_euler=self.start_orientation,
+                       car_type=self.car_type, action_steps=self.action_steps)
 
     def reset(self):
         """
@@ -285,11 +285,12 @@ class ParkingLotEnv(gym.Env):
             self.loaded = True
         p.setGravity(0, 0, -10)
 
-        # 加载小车
-        p.removeBody(self.car.id)
-        self.car = Car(self.client, basePosition=self.basePosition, baseOrientationEuler=self.start_orientation,
-                       carType=self.car_type, action_steps=self.action_steps)
-
+        # 重置小车
+        # p.removeBody(self.car.id)
+        # self.car = Car(self.client, base_position=self.basePosition, base_orientation_euler=self.start_orientation,
+        #    car_type=self.car_type, action_steps=self.action_steps)
+        # p.resetBasePositionAndOrientation(self.car.id)
+        self.car.reset()
         # 获取当前observation
         car_ob, self.vector = self.car.get_observation()
         observation = np.array(list(car_ob))

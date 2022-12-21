@@ -6,8 +6,8 @@ import numpy as np
 
 
 class Car:
-    def __init__(self, client, basePosition=None, baseOrientationEuler=None,
-                 max_velocity=6, max_force=100, carType='husky', action_steps=None):
+    def __init__(self, client, base_position=None, base_orientation_euler=None,
+                 max_velocity=6, max_force=100, car_type='husky', action_steps=None):
         """
         初始化小车
 
@@ -19,13 +19,14 @@ class Car:
         :param carType: 小车类型
         :param action_steps: 动作步数
         """
-        self.basePosition = basePosition or [0, 0, 0.2]
-        self.baseOrientationEuler = baseOrientationEuler or [0, 0, np.pi / 2]
+        self.base_position = base_position or [0, 0, 0.2]
+        self.base_orientation = p.getQuaternionFromEuler(
+            base_orientation_euler or [0, 0, np.pi / 2])
 
         self.client = client
-        urdfname = carType + '/' + carType + '.urdf'
-        self.id = p.loadURDF(fileName=urdfname, basePosition=basePosition,
-                              baseOrientation=p.getQuaternionFromEuler(baseOrientationEuler))
+        urdfname = car_type + '/' + car_type + '.urdf'
+        self.id = p.loadURDF(fileName=urdfname, basePosition=base_position,
+                             baseOrientation=self.base_orientation)
 
         self.steering_joints = [0, 2]
         self.drive_joints = [1, 3, 4, 5]
@@ -106,3 +107,7 @@ class Car:
         observation = np.array(position + velocity + orientation)  # 拼接坐标、速度、角度
 
         return observation, vector
+
+    def reset(self):
+        p.resetBasePositionAndOrientation(
+            self.id, self.base_position, self.base_orientation)
