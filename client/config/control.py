@@ -1,5 +1,5 @@
 MOTION = False
 SIGNDET = True
 
-RECORDER = "video"
+RECORDER = None  # "video"
 RECORDER_OUTPUT_FILE = "session.mp4"
