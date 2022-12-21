@@ -6,8 +6,6 @@ import pybullet as p
 import pybullet_data
 import numpy as np
 import time
-import os
-from pathlib import Path
 from gym import spaces
 
 from .car import Car
@@ -156,22 +154,22 @@ class ParkingLotEnv(gym.Env):
 
         # mode = 3, 6 (左上)
         if self.mode == '3' or self.mode == '6':
-            self.left_wall2 = p.loadURDF(str(ENVIRONMENT_RESOURCES_DIR/"up/side_boundary.urdf"),
+            self.left_wall2 = p.loadURDF(str(ENVIRONMENT_RESOURCES_DIR/"up"/"side_boundary.urdf"),
                                          basePosition=[-0.3, 2.1, 0.03], useFixedBase=10)
-            self.right_wall2 = p.loadURDF(str(ENVIRONMENT_RESOURCES_DIR/"up/side_boundary.urdf"),
+            self.right_wall2 = p.loadURDF(str(ENVIRONMENT_RESOURCES_DIR/"up"/"side_boundary.urdf"),
                                           basePosition=[-3.5, 2.1, 0.03], useFixedBase=10)
             self.front_wall2 = p.loadURDF(
-                str(ENVIRONMENT_RESOURCES_DIR/"up/front_boundary_lu.urdf"), basePosition=[-1.9, 2.8, 0.03], useFixedBase=10)
+                str(ENVIRONMENT_RESOURCES_DIR/"up"/"front_boundary_lu.urdf"), basePosition=[-1.9, 2.8, 0.03], useFixedBase=10)
             self.parked_car1 = p.loadURDF(
                 "husky/husky.urdf", basePosition=[-0.9, 2.1, 0.0], baseOrientation=p.getQuaternionFromEuler([0, 0, np.pi / 2]), useFixedBase=True)
             self.parked_car2 = p.loadURDF(
                 "husky/husky.urdf", basePosition=[-2.9, 2.1, 0.0], baseOrientation=p.getQuaternionFromEuler([0, 0, np.pi / 2]), useFixedBase=True)
         else:
-            p.loadURDF(str(ENVIRONMENT_RESOURCES_DIR/"up/side_boundary.urdf"),
+            p.loadURDF(str(ENVIRONMENT_RESOURCES_DIR/"up"/"side_boundary.urdf"),
                        basePosition=[-0.3, 2.1, 0.03], useFixedBase=10)
-            p.loadURDF(str(ENVIRONMENT_RESOURCES_DIR/"up/side_boundary.urdf"),
+            p.loadURDF(str(ENVIRONMENT_RESOURCES_DIR/"up"/"side_boundary.urdf"),
                        basePosition=[-3.5, 2.1, 0.03], useFixedBase=10)
-            p.loadURDF(str(ENVIRONMENT_RESOURCES_DIR/"up/front_boundary_lu.urdf"),
+            p.loadURDF(str(ENVIRONMENT_RESOURCES_DIR/"up"/"front_boundary_lu.urdf"),
                        basePosition=[-1.9, 2.8, 0.03], useFixedBase=10)
             p.loadURDF("husky/husky.urdf", basePosition=[-0.9, 2.1, 0.0],
                        baseOrientation=p.getQuaternionFromEuler([0, 0, np.pi / 2]), useFixedBase=True)
@@ -192,18 +190,18 @@ class ParkingLotEnv(gym.Env):
 
         # mode = 4 (左下)
         if self.mode == '4':
-            self.left_wall3 = p.loadURDF(str(ENVIRONMENT_RESOURCES_DIR/"down/side_boundary_ld.urdf"),
+            self.left_wall3 = p.loadURDF(str(ENVIRONMENT_RESOURCES_DIR/"down"/"side_boundary_ld.urdf"),
                                          basePosition=[-0.8, -2.1, 0.03], useFixedBase=10)
-            self.right_wall3 = p.loadURDF(str(ENVIRONMENT_RESOURCES_DIR/"down/side_boundary_ld.urdf"),
+            self.right_wall3 = p.loadURDF(str(ENVIRONMENT_RESOURCES_DIR/"down"/"side_boundary_ld.urdf"),
                                           basePosition=[-3.0, -2.1, 0.03], useFixedBase=10)
-            self.front_wall3 = p.loadURDF(str(ENVIRONMENT_RESOURCES_DIR/"down/front_boundary_ld.urdf"),
+            self.front_wall3 = p.loadURDF(str(ENVIRONMENT_RESOURCES_DIR/"down"/"front_boundary_ld.urdf"),
                                           basePosition=[-1.9, -2.7, 0.03], useFixedBase=10)
         else:
-            p.loadURDF(str(ENVIRONMENT_RESOURCES_DIR/"down/side_boundary_ld.urdf"),
+            p.loadURDF(str(ENVIRONMENT_RESOURCES_DIR/"down"/"side_boundary_ld.urdf"),
                        basePosition=[-0.8, -2.1, 0.03], useFixedBase=10)
-            p.loadURDF(str(ENVIRONMENT_RESOURCES_DIR/"down/side_boundary_ld.urdf"),
+            p.loadURDF(str(ENVIRONMENT_RESOURCES_DIR/"down"/"side_boundary_ld.urdf"),
                        basePosition=[-3.0, -2.1, 0.03], useFixedBase=10)
-            p.loadURDF(str(ENVIRONMENT_RESOURCES_DIR/"down/front_boundary_ld.urdf"),
+            p.loadURDF(str(ENVIRONMENT_RESOURCES_DIR/"down"/"front_boundary_ld.urdf"),
                        basePosition=[-1.9, -2.7, 0.03], useFixedBase=10)
         p.addUserDebugLine([-0.9, -1.6, 0.02], [-2.9, -1.6,
                            0.02], [0.98, 0.98, 0.98], 2.5)
@@ -217,17 +215,17 @@ class ParkingLotEnv(gym.Env):
         # mode = 5 (右下)
         if self.mode == '5':
             self.left_wall4 = p.loadURDF(
-                str(ENVIRONMENT_RESOURCES_DIR/"down/side_boundary_rd.urdf"), basePosition=[1.6, -2.15, 0.03], useFixedBase=10)
+                str(ENVIRONMENT_RESOURCES_DIR/"down"/"side_boundary_rd.urdf"), basePosition=[1.6, -2.15, 0.03], useFixedBase=10)
             self.right_wall4 = p.loadURDF(
-                str(ENVIRONMENT_RESOURCES_DIR/"down/side_boundary_rd.urdf"), basePosition=[2.9, -2.15, 0.03], useFixedBase=10)
+                str(ENVIRONMENT_RESOURCES_DIR/"down"/"side_boundary_rd.urdf"), basePosition=[2.9, -2.15, 0.03], useFixedBase=10)
             self.front_wall4 = p.loadURDF(
-                str(ENVIRONMENT_RESOURCES_DIR/"down/front_boundary_rd.urdf"), basePosition=[2.55, -2.8, 0.03], useFixedBase=10)
+                str(ENVIRONMENT_RESOURCES_DIR/"down"/"front_boundary_rd.urdf"), basePosition=[2.55, -2.8, 0.03], useFixedBase=10)
         else:
-            p.loadURDF(str(ENVIRONMENT_RESOURCES_DIR/"down/side_boundary_rd.urdf"),
+            p.loadURDF(str(ENVIRONMENT_RESOURCES_DIR/"down"/"side_boundary_rd.urdf"),
                        basePosition=[1.6, -2.15, 0.03], useFixedBase=10)
-            p.loadURDF(str(ENVIRONMENT_RESOURCES_DIR/"down/side_boundary_rd.urdf"),
+            p.loadURDF(str(ENVIRONMENT_RESOURCES_DIR/"down"/"side_boundary_rd.urdf"),
                        basePosition=[2.9, -2.15, 0.03], useFixedBase=10)
-            p.loadURDF(str(ENVIRONMENT_RESOURCES_DIR/"down/front_boundary_rd.urdf"),
+            p.loadURDF(str(ENVIRONMENT_RESOURCES_DIR/"down"/"front_boundary_rd.urdf"),
                        basePosition=[2.55, -2.8, 0.03], useFixedBase=10)
         p.addUserDebugLine([1.4, -1.6, 0.02], [2.5, -1.6,
                            0.02], [0.98, 0.98, 0.98], 2.5)
@@ -263,7 +261,7 @@ class ParkingLotEnv(gym.Env):
             self.goal = np.array([-3.8 / 2, 4.2 / 2])
             self.start_orientation = [0, 0, np.random.rand() * 2 * np.pi]
             self.target_orientation = np.pi * 3 / 2
-            while 1:
+            while True:
                 random_x = (np.random.rand() - 0.5) * 3
                 random_y = (np.random.rand() - 0.5) * 3
                 if random_x < 0 and random_y > 0:
@@ -274,9 +272,8 @@ class ParkingLotEnv(gym.Env):
 
         self.desired_goal = np.array([self.goal[0], self.goal[1], 0.0, 0.0, np.cos(
             self.target_orientation), np.sin(self.target_orientation)])
-        self.t = Car(self.client, basePosition=self.basePosition, baseOrientationEuler=self.start_orientation,
-                     carType=self.car_type, action_steps=self.action_steps)
-        self.car = self.t.car
+        self.car = Car(self.client, basePosition=self.basePosition, baseOrientationEuler=self.start_orientation,
+                       carType=self.car_type, action_steps=self.action_steps)
 
     def reset(self):
         """
@@ -286,17 +283,15 @@ class ParkingLotEnv(gym.Env):
         if not self.loaded:
             self._load_env()
             self.loaded = True
-        # p.resetSimulation(self.client)
         p.setGravity(0, 0, -10)
 
         # 加载小车
-        p.removeBody(self.t.car)
-        self.t = Car(self.client, basePosition=self.basePosition, baseOrientationEuler=self.start_orientation,
-                     carType=self.car_type, action_steps=self.action_steps)
-        self.car = self.t.car
+        p.removeBody(self.car.id)
+        self.car = Car(self.client, basePosition=self.basePosition, baseOrientationEuler=self.start_orientation,
+                       carType=self.car_type, action_steps=self.action_steps)
 
         # 获取当前observation
-        car_ob, self.vector = self.t.get_observation()
+        car_ob, self.vector = self.car.get_observation()
         observation = np.array(list(car_ob))
 
         self.step_cnt = 0
@@ -345,27 +340,27 @@ class ParkingLotEnv(gym.Env):
 
         done = False
         if self.mode == '1' or self.mode == '2':
-            points1 = p.getContactPoints(self.car, self.left_wall1)
-            points2 = p.getContactPoints(self.car, self.right_wall1)
-            points3 = p.getContactPoints(self.car, self.front_wall1)
+            points1 = p.getContactPoints(self.car.id, self.left_wall1)
+            points2 = p.getContactPoints(self.car.id, self.right_wall1)
+            points3 = p.getContactPoints(self.car.id, self.front_wall1)
         elif self.mode == '3' or self.mode == '6':
-            points1 = p.getContactPoints(self.car, self.left_wall2)
-            points2 = p.getContactPoints(self.car, self.right_wall2)
-            points3 = p.getContactPoints(self.car, self.front_wall2)
+            points1 = p.getContactPoints(self.car.id, self.left_wall2)
+            points2 = p.getContactPoints(self.car.id, self.right_wall2)
+            points3 = p.getContactPoints(self.car.id, self.front_wall2)
         elif self.mode == '4':
-            points1 = p.getContactPoints(self.car, self.left_wall3)
-            points2 = p.getContactPoints(self.car, self.right_wall3)
-            points3 = p.getContactPoints(self.car, self.front_wall3)
+            points1 = p.getContactPoints(self.car.id, self.left_wall3)
+            points2 = p.getContactPoints(self.car.id, self.right_wall3)
+            points3 = p.getContactPoints(self.car.id, self.front_wall3)
         elif self.mode == '5':
-            points1 = p.getContactPoints(self.car, self.left_wall4)
-            points2 = p.getContactPoints(self.car, self.right_wall4)
-            points3 = p.getContactPoints(self.car, self.front_wall4)
+            points1 = p.getContactPoints(self.car.id, self.left_wall4)
+            points2 = p.getContactPoints(self.car.id, self.right_wall4)
+            points3 = p.getContactPoints(self.car.id, self.front_wall4)
 
         if len(points1) or len(points2) or len(points3):
             done = True
         if self.mode == '3' or self.mode == '6':
-            points4 = p.getContactPoints(self.car, self.parked_car1)
-            points5 = p.getContactPoints(self.car, self.parked_car2)
+            points4 = p.getContactPoints(self.car.id, self.parked_car1)
+            points5 = p.getContactPoints(self.car.id, self.parked_car2)
             if len(points4) or len(points5):
                 done = True
 
@@ -379,9 +374,9 @@ class ParkingLotEnv(gym.Env):
         :return: observation, reward, done, info
         """
 
-        self.t.apply_action(action)  # 小车执行动作
+        self.car.apply_action(action)  # 小车执行动作
         p.stepSimulation()
-        car_ob, self.vector = self.t.get_observation()  # 获取小车状态
+        car_ob, self.vector = self.car.get_observation()  # 获取小车状态
 
         position = np.array(car_ob[:2])
         distance = self.distance_function(position)
@@ -431,14 +426,11 @@ class ParkingLotEnv(gym.Env):
         :param seed: 种子
         :return: [seed]
         """
-
         self.np_random, seed = gym.utils.seeding.np_random(seed)
         return [seed]
 
     def close(self):
         """
         关闭环境
-
         """
-
         p.disconnect(self.client)

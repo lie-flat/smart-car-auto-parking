@@ -24,7 +24,7 @@ class Car:
 
         self.client = client
         urdfname = carType + '/' + carType + '.urdf'
-        self.car = p.loadURDF(fileName=urdfname, basePosition=basePosition,
+        self.id = p.loadURDF(fileName=urdfname, basePosition=basePosition,
                               baseOrientation=p.getQuaternionFromEuler(baseOrientationEuler))
 
         self.steering_joints = [0, 2]
@@ -48,23 +48,23 @@ class Car:
             for _ in range(self.action_steps):
                 for joint in range(2, 6):
                     p.setJointMotorControl2(
-                        self.car, joint, p.VELOCITY_CONTROL, targetVelocity=velocity, force=force)
+                        self.id, joint, p.VELOCITY_CONTROL, targetVelocity=velocity, force=force)
                 p.stepSimulation()
         elif action == 1:  # 后退
             for _ in range(self.action_steps):
                 for joint in range(2, 6):
                     p.setJointMotorControl2(
-                        self.car, joint, p.VELOCITY_CONTROL, targetVelocity=-velocity, force=force)
+                        self.id, joint, p.VELOCITY_CONTROL, targetVelocity=-velocity, force=force)
                 p.stepSimulation()
         elif action == 2:  # 左转
             targetVel = 3
             for _ in range(self.action_steps):
                 for joint in range(2, 6):
                     for joint in range(1, 3):
-                        p.setJointMotorControl2(self.car, 2 * joint + 1, p.VELOCITY_CONTROL,
+                        p.setJointMotorControl2(self.id, 2 * joint + 1, p.VELOCITY_CONTROL,
                                                 targetVelocity=targetVel, force=force)
                     for joint in range(1, 3):
-                        p.setJointMotorControl2(self.car, 2 * joint, p.VELOCITY_CONTROL, targetVelocity=-targetVel,
+                        p.setJointMotorControl2(self.id, 2 * joint, p.VELOCITY_CONTROL, targetVelocity=-targetVel,
                                                 force=force)
                     p.stepSimulation()
         elif action == 3:  # 右转
@@ -72,16 +72,16 @@ class Car:
             for _ in range(self.action_steps):
                 for joint in range(2, 6):
                     for joint in range(1, 3):
-                        p.setJointMotorControl2(self.car, 2 * joint, p.VELOCITY_CONTROL, targetVelocity=targetVel,
+                        p.setJointMotorControl2(self.id, 2 * joint, p.VELOCITY_CONTROL, targetVelocity=targetVel,
                                                 force=force)
                     for joint in range(1, 3):
-                        p.setJointMotorControl2(self.car, 2 * joint + 1, p.VELOCITY_CONTROL,
+                        p.setJointMotorControl2(self.id, 2 * joint + 1, p.VELOCITY_CONTROL,
                                                 targetVelocity=-targetVel, force=force)
                     p.stepSimulation()
         elif action == 4:  # 停止
             targetVel = 0
             for joint in range(2, 6):
-                p.setJointMotorControl2(self.car, joint, p.VELOCITY_CONTROL, targetVelocity=targetVel,
+                p.setJointMotorControl2(self.id, joint, p.VELOCITY_CONTROL, targetVelocity=targetVel,
                                         force=force)
             p.stepSimulation()
         else:
@@ -94,9 +94,9 @@ class Car:
         :return: observation, vector
         """
 
-        position, angle = p.getBasePositionAndOrientation(self.car)  # 获取小车位姿
+        position, angle = p.getBasePositionAndOrientation(self.id)  # 获取小车位姿
         angle = p.getEulerFromQuaternion(angle)
-        velocity = p.getBaseVelocity(self.car)[0]
+        velocity = p.getBaseVelocity(self.id)[0]
 
         position = [position[0], position[1]]
         velocity = [velocity[0], velocity[1]]
