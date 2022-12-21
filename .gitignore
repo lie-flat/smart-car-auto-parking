@@ -4,3 +4,4 @@ firmware/build
 **/**/__pycache__
 misc
 devices.cache.json
+logs/
