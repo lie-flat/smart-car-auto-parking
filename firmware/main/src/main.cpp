@@ -10,6 +10,7 @@ AsyncWebServer server(80);
 Adafruit_MPU6050 mpu;
 IPAddress camAddr;
 bool ready = false;
+QueueHandle_t cmdQueue;
 
 void notFound(AsyncWebServerRequest* request) {
   request->send(404, "text/plain", "Not found");
@@ -39,7 +40,9 @@ void act(float servo, float motor_a, float motor_b, int duration) {
   set_servo(servo);
   set_a(motor_a);
   set_b(motor_b);
-  delay(duration);
+  vTaskDelay(duration);
+  set_a(0);
+  set_b(0);
 }
 
 void setup() {
@@ -58,6 +61,8 @@ void setup() {
   // Optocoupler
   attachInterrupt(digitalPinToInterrupt(optocoupler), optocoupler_interrupt,
                   RISING);
+  // Command queue
+  cmdQueue = xQueueCreate(1, sizeof(AsyncWebServerRequest*));
   // Web server
   server.on("/", HTTP_GET, [](AsyncWebServerRequest* request) {
     request->send(200, "text/plain", "Hello, world");
@@ -72,12 +77,11 @@ void setup() {
   });
   server.on("/act", HTTP_POST, [](AsyncWebServerRequest* request) {
     // Synchronous action web API
-    auto duration = parse_int_param(request, "duration");
-    auto servo = parse_float_param(request, SERVO_PARAM);
-    auto motor_a = parse_float_param(request, MOTOR_A_PARAM);
-    auto motor_b = parse_float_param(request, MOTOR_B_PARAM);
-    act(servo, motor_a, motor_b, duration);
-    request->send(200, "text/plain", "OK");
+    // Put the request in the queue
+    if (xQueueSend(cmdQueue, (void*)&request, (TickType_t)10) != pdPASS) {
+      request->send(500);  // Send internal server error if we did not manage to
+                           // put the request to the queue.
+    }
   });
   server.on("/cmd", HTTP_POST, [](AsyncWebServerRequest* request) {
     if (request->hasParam(SERVO_PARAM, true))
@@ -128,4 +132,16 @@ void setup() {
   ready = true;
 }
 
-void loop() {}
+void loop() {
+  if (uxQueueMessagesWaiting(cmdQueue)) {
+    AsyncWebServerRequest* request;
+    if (xQueueReceive(cmdQueue, &request, (TickType_t)10)) {
+      auto duration = parse_int_param(request, "duration");
+      auto servo = parse_float_param(request, SERVO_PARAM);
+      auto motor_a = parse_float_param(request, MOTOR_A_PARAM);
+      auto motor_b = parse_float_param(request, MOTOR_B_PARAM);
+      act(servo, motor_a, motor_b, duration);
+      request->send(200, "text/plain", "OK");
+    }
+  }
+}
