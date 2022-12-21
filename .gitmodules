@@ -1,3 +1,6 @@
 [submodule "client/ai/PaddleDetection"]
 	path = client/ai/PaddleDetection
 	url = https://github.com/PaddlePaddle/PaddleDetection
+[submodule "firmware/shared/ESPAsyncWebServer"]
+	path = firmware/shared/ESPAsyncWebServer
+	url = https://github.com/kxxt/ESPAsyncWebServer
