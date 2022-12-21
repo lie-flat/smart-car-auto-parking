@@ -35,6 +35,13 @@ void IRAM_ATTR optocoupler_interrupt() {
   optocoupler_state += digitalRead(optocoupler);
 }
 
+void act(float servo, float motor_a, float motor_b, int duration) {
+  set_servo(servo);
+  set_a(motor_a);
+  set_b(motor_b);
+  delay(duration);
+}
+
 void setup() {
   // put your setup code here, to run once:
   // Motor & Servo
@@ -62,6 +69,15 @@ void setup() {
       buzz(2000, 1500);
     } else
       request->send(425, "text/plain", "Too Early");
+  });
+  server.on("/act", HTTP_POST, [](AsyncWebServerRequest* request) {
+    // Synchronous action web API
+    auto duration = parse_int_param(request, "duration");
+    auto servo = parse_float_param(request, SERVO_PARAM);
+    auto motor_a = parse_float_param(request, MOTOR_A_PARAM);
+    auto motor_b = parse_float_param(request, MOTOR_B_PARAM);
+    act(servo, motor_a, motor_b, duration);
+    request->send(200, "text/plain", "OK");
   });
   server.on("/cmd", HTTP_POST, [](AsyncWebServerRequest* request) {
     if (request->hasParam(SERVO_PARAM, true))
