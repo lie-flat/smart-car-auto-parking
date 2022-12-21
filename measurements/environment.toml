@@ -1,0 +1,7 @@
+[enviroment]
+version = "1.0"
+unit = "meter"
+
+[enviroment.map]
+x = 1.210
+z = 1.015
