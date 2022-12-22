@@ -11,6 +11,8 @@ def build_train_parser():
                             help='checkpoint save frequency')
         parser.add_argument('--ckpt-path', type=str,
                             default='', help='checkpoint path')
+        parser.add_argument('--resume-from', type=str,
+                            default='', help='model/run to resume from')
     return build_parser(builder)
 
 

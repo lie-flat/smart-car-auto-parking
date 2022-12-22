@@ -10,12 +10,13 @@ from gym import spaces
 
 from .car import Car
 from ..config import ENVIRONMENT_RESOURCES_DIR
+from ..config.rl import TARGET_AREA_BOTTOM_LEFT, TARGET_AREA_BOTTOM_RIGHT, TARGET_AREA_TOP_LEFT, TARGET_AREA_TOP_RIGHT, TARGET_X, TARGET_Y
 
 
 class ParkingLotEnv(gym.Env):
     metadata = {'render.modes': ['human']}
 
-    def __init__(self, render=False, car_type='husky', mode='1', manual=False, multi_obs=False, render_video=False):
+    def __init__(self, render=False, car_type='husky', mode='1', manual=False, render_video=False):
         """
         初始化环境
 
@@ -23,13 +24,11 @@ class ParkingLotEnv(gym.Env):
         :param car_type: 小车类型（husky）
         :param mode: 任务类型
         :param manual: 是否手动操作
-        :param multi_obs: 是否使用多个observation
         :param render_video: 是否渲染视频
         """
         self.loaded = False
         self.car_type = car_type
         self.manual = manual
-        self.multi_obs = multi_obs
         self.mode = mode
         assert self.mode in ['1', '2', '3', '4', '5', '6']
 
@@ -39,35 +38,11 @@ class ParkingLotEnv(gym.Env):
         self.desired_goal = None
 
         self.ground = None
-        self.left_wall1 = None
-        self.right_wall1 = None
-        self.front_wall1 = None
-        self.left_wall2 = None
-        self.right_wall2 = None
-        self.front_wall2 = None
-        self.left_wall3 = None
-        self.right_wall3 = None
-        self.front_wall3 = None
-        self.left_wall4 = None
-        self.right_wall4 = None
-        self.front_wall4 = None
-        self.parked_car1 = None
-        self.parked_car2 = None
-
         # 定义状态空间
         obs_low = np.array([0, 0, -1, -1, -1, -1], dtype=np.float32)
         obs_high = np.array([20, 20, 1, 1, 1, 1], dtype=np.float32)
-        if multi_obs:
-            self.observation_space = spaces.Dict(
-                spaces={
-                    "observation": spaces.Box(low=obs_low, high=obs_high, dtype=np.float32),
-                    "achieved_goal": spaces.Box(low=obs_low, high=obs_high, dtype=np.float32),
-                    "desired_goal": spaces.Box(low=obs_low, high=obs_high, dtype=np.float32),
-                }
-            )
-        else:
-            self.observation_space = spaces.Box(
-                low=obs_low, high=obs_high, dtype=np.float32)
+        self.observation_space = spaces.Box(
+            low=obs_low, high=obs_high, dtype=np.float32)
 
         # 定义动作空间
         self.action_space = spaces.Discrete(4)  # 4种动作：前进、后退、左转、右转
@@ -119,158 +94,24 @@ class ParkingLotEnv(gym.Env):
         p.setGravity(0, 0, -10)
         self.ground = p.loadURDF(
             str(ENVIRONMENT_RESOURCES_DIR/"ground.urdf"), basePosition=[0, 0, 0.005], useFixedBase=10)
-
-        p.addUserDebugLine([-3.5, -3.5, 0.02],
-                           [-3.5, 3.5, 0.02], [0.75, 0.75, 0.75], 5)
-        p.addUserDebugLine([-3.5, -3.5, 0.02],
-                           [3.5, -3.5, 0.02], [0.75, 0.75, 0.75], 5)
-        p.addUserDebugLine([3.5, 3.5, 0.02], [3.5, -3.5,
-                           0.02], [0.75, 0.75, 0.75], 5)
-        p.addUserDebugLine([3.5, 3.5, 0.02], [-3.5, 3.5,
-                           0.02], [0.75, 0.75, 0.75], 5)
-
-        # mode = 1, 2 (右上)
-        if self.mode == '1' or self.mode == '2':
-            self.left_wall1 = p.loadURDF(
-                str(ENVIRONMENT_RESOURCES_DIR/"up/side_boundary.urdf"), basePosition=[1.3, 2.1, 0.03], useFixedBase=10)
-            self.right_wall1 = p.loadURDF(
-                str(ENVIRONMENT_RESOURCES_DIR/"up/side_boundary.urdf"), basePosition=[2.5, 2.1, 0.03], useFixedBase=10)
-            self.front_wall1 = p.loadURDF(
-                str(ENVIRONMENT_RESOURCES_DIR/"up/front_boundary_ru.urdf"), basePosition=[1.9, 2.8, 0.03], useFixedBase=10)
-        else:
-            p.loadURDF(str(ENVIRONMENT_RESOURCES_DIR/"up/side_boundary.urdf"),
-                       basePosition=[1.3, 2.1, 0.03], useFixedBase=10)
-            p.loadURDF(str(ENVIRONMENT_RESOURCES_DIR/"up/side_boundary.urdf"),
-                       basePosition=[2.5, 2.1, 0.03], useFixedBase=10)
-            p.loadURDF(str(ENVIRONMENT_RESOURCES_DIR/"up/front_boundary_ru.urdf"),
-                       basePosition=[1.9, 2.8, 0.03], useFixedBase=10)
-        p.addUserDebugLine([1.4, 1.5, 0.02], [1.4, 2.7, 0.02], [
-                           0.98, 0.98, 0.98], 2.5)
-        p.addUserDebugLine([1.4, 1.5, 0.02], [2.4, 1.5, 0.02], [
-                           0.98, 0.98, 0.98], 2.5)
-        p.addUserDebugLine([2.4, 2.7, 0.02], [1.4, 2.7, 0.02], [
-                           0.98, 0.98, 0.98], 2.5)
-        p.addUserDebugLine([2.4, 2.7, 0.02], [2.4, 1.5, 0.02], [
-                           0.98, 0.98, 0.98], 2.5)
-
-        # mode = 3, 6 (左上)
-        if self.mode == '3' or self.mode == '6':
-            self.left_wall2 = p.loadURDF(str(ENVIRONMENT_RESOURCES_DIR/"up"/"side_boundary.urdf"),
-                                         basePosition=[-0.3, 2.1, 0.03], useFixedBase=10)
-            self.right_wall2 = p.loadURDF(str(ENVIRONMENT_RESOURCES_DIR/"up"/"side_boundary.urdf"),
-                                          basePosition=[-3.5, 2.1, 0.03], useFixedBase=10)
-            self.front_wall2 = p.loadURDF(
-                str(ENVIRONMENT_RESOURCES_DIR/"up"/"front_boundary_lu.urdf"), basePosition=[-1.9, 2.8, 0.03], useFixedBase=10)
-            self.parked_car1 = p.loadURDF(
-                "husky/husky.urdf", basePosition=[-0.9, 2.1, 0.0], baseOrientation=p.getQuaternionFromEuler([0, 0, np.pi / 2]), useFixedBase=True)
-            self.parked_car2 = p.loadURDF(
-                "husky/husky.urdf", basePosition=[-2.9, 2.1, 0.0], baseOrientation=p.getQuaternionFromEuler([0, 0, np.pi / 2]), useFixedBase=True)
-        else:
-            p.loadURDF(str(ENVIRONMENT_RESOURCES_DIR/"up"/"side_boundary.urdf"),
-                       basePosition=[-0.3, 2.1, 0.03], useFixedBase=10)
-            p.loadURDF(str(ENVIRONMENT_RESOURCES_DIR/"up"/"side_boundary.urdf"),
-                       basePosition=[-3.5, 2.1, 0.03], useFixedBase=10)
-            p.loadURDF(str(ENVIRONMENT_RESOURCES_DIR/"up"/"front_boundary_lu.urdf"),
-                       basePosition=[-1.9, 2.8, 0.03], useFixedBase=10)
-            p.loadURDF("husky/husky.urdf", basePosition=[-0.9, 2.1, 0.0],
-                       baseOrientation=p.getQuaternionFromEuler([0, 0, np.pi / 2]), useFixedBase=True)
-            p.loadURDF("husky/husky.urdf", basePosition=[-2.9, 2.1, 0.0],
-                       baseOrientation=p.getQuaternionFromEuler([0, 0, np.pi / 2]), useFixedBase=True)
-        p.addUserDebugLine([-0.4, 1.5, 0.02], [-3.4, 1.5,
-                           0.02], [0.98, 0.98, 0.98], 2.5)
-        p.addUserDebugLine([-0.4, 2.7, 0.02], [-3.4, 2.7,
-                           0.02], [0.98, 0.98, 0.98], 2.5)
-        p.addUserDebugLine([-0.4, 1.5, 0.02], [-0.4, 2.7,
-                           0.02], [0.98, 0.98, 0.98], 2.5)
-        p.addUserDebugLine([-1.4, 1.5, 0.02], [-1.4, 2.7,
-                           0.02], [0.98, 0.98, 0.98], 2.5)
-        p.addUserDebugLine([-2.4, 1.5, 0.02], [-2.4, 2.7,
-                           0.02], [0.98, 0.98, 0.98], 2.5)
-        p.addUserDebugLine([-3.4, 1.5, 0.02], [-3.4, 2.7,
-                           0.02], [0.98, 0.98, 0.98], 2.5)
-
-        # mode = 4 (左下)
-        if self.mode == '4':
-            self.left_wall3 = p.loadURDF(str(ENVIRONMENT_RESOURCES_DIR/"down"/"side_boundary_ld.urdf"),
-                                         basePosition=[-0.8, -2.1, 0.03], useFixedBase=10)
-            self.right_wall3 = p.loadURDF(str(ENVIRONMENT_RESOURCES_DIR/"down"/"side_boundary_ld.urdf"),
-                                          basePosition=[-3.0, -2.1, 0.03], useFixedBase=10)
-            self.front_wall3 = p.loadURDF(str(ENVIRONMENT_RESOURCES_DIR/"down"/"front_boundary_ld.urdf"),
-                                          basePosition=[-1.9, -2.7, 0.03], useFixedBase=10)
-        else:
-            p.loadURDF(str(ENVIRONMENT_RESOURCES_DIR/"down"/"side_boundary_ld.urdf"),
-                       basePosition=[-0.8, -2.1, 0.03], useFixedBase=10)
-            p.loadURDF(str(ENVIRONMENT_RESOURCES_DIR/"down"/"side_boundary_ld.urdf"),
-                       basePosition=[-3.0, -2.1, 0.03], useFixedBase=10)
-            p.loadURDF(str(ENVIRONMENT_RESOURCES_DIR/"down"/"front_boundary_ld.urdf"),
-                       basePosition=[-1.9, -2.7, 0.03], useFixedBase=10)
-        p.addUserDebugLine([-0.9, -1.6, 0.02], [-2.9, -1.6,
-                           0.02], [0.98, 0.98, 0.98], 2.5)
-        p.addUserDebugLine([-0.9, -2.6, 0.02], [-2.9, -2.6,
-                           0.02], [0.98, 0.98, 0.98], 2.5)
-        p.addUserDebugLine([-0.9, -1.6, 0.02], [-0.9, -2.6,
-                           0.02], [0.98, 0.98, 0.98], 2.5)
-        p.addUserDebugLine([-2.9, -1.6, 0.02], [-2.9, -2.6,
-                           0.02], [0.98, 0.98, 0.98], 2.5)
-
-        # mode = 5 (右下)
-        if self.mode == '5':
-            self.left_wall4 = p.loadURDF(
-                str(ENVIRONMENT_RESOURCES_DIR/"down"/"side_boundary_rd.urdf"), basePosition=[1.6, -2.15, 0.03], useFixedBase=10)
-            self.right_wall4 = p.loadURDF(
-                str(ENVIRONMENT_RESOURCES_DIR/"down"/"side_boundary_rd.urdf"), basePosition=[2.9, -2.15, 0.03], useFixedBase=10)
-            self.front_wall4 = p.loadURDF(
-                str(ENVIRONMENT_RESOURCES_DIR/"down"/"front_boundary_rd.urdf"), basePosition=[2.55, -2.8, 0.03], useFixedBase=10)
-        else:
-            p.loadURDF(str(ENVIRONMENT_RESOURCES_DIR/"down"/"side_boundary_rd.urdf"),
-                       basePosition=[1.6, -2.15, 0.03], useFixedBase=10)
-            p.loadURDF(str(ENVIRONMENT_RESOURCES_DIR/"down"/"side_boundary_rd.urdf"),
-                       basePosition=[2.9, -2.15, 0.03], useFixedBase=10)
-            p.loadURDF(str(ENVIRONMENT_RESOURCES_DIR/"down"/"front_boundary_rd.urdf"),
-                       basePosition=[2.55, -2.8, 0.03], useFixedBase=10)
-        p.addUserDebugLine([1.4, -1.6, 0.02], [2.5, -1.6,
-                           0.02], [0.98, 0.98, 0.98], 2.5)
-        p.addUserDebugLine([2.0, -2.7, 0.02], [3.1, -2.7,
-                           0.02], [0.98, 0.98, 0.98], 2.5)
-        p.addUserDebugLine([1.4, -1.6, 0.02], [2.0, -2.7,
-                           0.02], [0.98, 0.98, 0.98], 2.5)
-        p.addUserDebugLine([2.5, -1.6, 0.02], [3.1, -2.7,
-                           0.02], [0.98, 0.98, 0.98], 2.5)
-        self.basePosition = [0, 0, 0.2]
-        if self.mode == '1':
-            self.goal = np.array([3.8 / 2, 4.2 / 2])
-            self.start_orientation = [0, 0, np.pi * 3 / 2]
-            self.target_orientation = np.pi * 3 / 2
-            self.basePosition = [1.9, -0.2, 0.2]
-        elif self.mode == '2':
-            self.goal = np.array([3.8 / 2, 4.2 / 2])
-            self.start_orientation = [0, 0, np.pi * 2 / 2]
-            self.target_orientation = np.pi * 3 / 2
-        elif self.mode == '3':
-            self.goal = np.array([-3.8 / 2, 4.2 / 2])
-            self.start_orientation = [0, 0, np.pi * 4 / 2]
-            self.target_orientation = np.pi * 3 / 2
-        elif self.mode == '4':
-            self.goal = np.array([-3.8 / 2, -4.2 / 2])
-            self.start_orientation = [0, 0, np.pi * 0 / 2]
-            self.target_orientation = np.pi * 0 / 2
-        elif self.mode == '5':
-            self.goal = np.array([4.53 / 2, -4.55 / 2])
-            self.start_orientation = [0, 0, np.pi * 2 / 2]
-            self.target_orientation = 2.070143
-        elif self.mode == '6':
-            self.goal = np.array([-3.8 / 2, 4.2 / 2])
-            self.start_orientation = [0, 0, np.random.rand() * 2 * np.pi]
-            self.target_orientation = np.pi * 3 / 2
-            while True:
-                random_x = (np.random.rand() - 0.5) * 3
-                random_y = (np.random.rand() - 0.5) * 3
-                if random_x < 0 and random_y > 0:
-                    continue
-                else:
-                    break
-            self.basePosition = [random_x, random_y, 0.2]
-
+        thickness = 2.5
+        color = [0.98, 0.98, 0.98]
+        p.addUserDebugLine(TARGET_AREA_TOP_LEFT,
+                           TARGET_AREA_TOP_RIGHT, color, thickness)
+        p.addUserDebugLine(TARGET_AREA_TOP_LEFT,
+                           TARGET_AREA_BOTTOM_LEFT, color, thickness)
+        p.addUserDebugLine(TARGET_AREA_BOTTOM_RIGHT,
+                           TARGET_AREA_BOTTOM_LEFT, color, thickness)
+        p.addUserDebugLine(TARGET_AREA_TOP_RIGHT,
+                           TARGET_AREA_BOTTOM_RIGHT, color, thickness)
+        # self.basePosition = [-1.5, 1.4, 0.2]
+        # self.basePosition = [-0.2, 1.4, 0.2] # 直线入库
+        self.basePosition = [-1.5, 1.45, 0.2] # 斜方入库1
+        # self.basePosition = [TARGET_X, TARGET_Y, 0.2]
+        self.goal = np.array([TARGET_X, TARGET_Y])
+        # self.start_orientation = [0, 0, np.pi * 2 / 2]
+        self.start_orientation = [0, 0, np.pi]
+        self.target_orientation = 2.070143
         self.desired_goal = np.array([self.goal[0], self.goal[1], 0.0, 0.0, np.cos(
             self.target_orientation), np.sin(self.target_orientation)])
         self.car = Car(self.client, base_position=self.basePosition, base_orientation_euler=self.start_orientation,
@@ -296,13 +137,6 @@ class ParkingLotEnv(gym.Env):
         observation = np.array(list(car_ob))
 
         self.step_cnt = 0
-
-        if self.multi_obs:
-            observation = {
-                'observation': observation,
-                'achieved_goal': observation,
-                'desired_goal': self.desired_goal
-            }
 
         return observation
 
@@ -340,30 +174,6 @@ class ParkingLotEnv(gym.Env):
         """
 
         done = False
-        if self.mode == '1' or self.mode == '2':
-            points1 = p.getContactPoints(self.car.id, self.left_wall1)
-            points2 = p.getContactPoints(self.car.id, self.right_wall1)
-            points3 = p.getContactPoints(self.car.id, self.front_wall1)
-        elif self.mode == '3' or self.mode == '6':
-            points1 = p.getContactPoints(self.car.id, self.left_wall2)
-            points2 = p.getContactPoints(self.car.id, self.right_wall2)
-            points3 = p.getContactPoints(self.car.id, self.front_wall2)
-        elif self.mode == '4':
-            points1 = p.getContactPoints(self.car.id, self.left_wall3)
-            points2 = p.getContactPoints(self.car.id, self.right_wall3)
-            points3 = p.getContactPoints(self.car.id, self.front_wall3)
-        elif self.mode == '5':
-            points1 = p.getContactPoints(self.car.id, self.left_wall4)
-            points2 = p.getContactPoints(self.car.id, self.right_wall4)
-            points3 = p.getContactPoints(self.car.id, self.front_wall4)
-
-        if len(points1) or len(points2) or len(points3):
-            done = True
-        if self.mode == '3' or self.mode == '6':
-            points4 = p.getContactPoints(self.car.id, self.parked_car1)
-            points5 = p.getContactPoints(self.car.id, self.parked_car2)
-            if len(points4) or len(points5):
-                done = True
 
         return done
 
@@ -390,7 +200,7 @@ class ParkingLotEnv(gym.Env):
         self.done = False
         self.success = False
 
-        if distance < 0.1:
+        if distance < 0.2:
             self.success = True
             self.done = True
 
@@ -409,13 +219,6 @@ class ParkingLotEnv(gym.Env):
             self.step_cnt = 0
 
         observation = np.array(list(car_ob))
-        if self.multi_obs:
-            observation = {
-                'observation': observation,
-                'achieved_goal': observation,
-                'desired_goal': self.desired_goal
-            }
-
         info = {'is_success': self.success}
 
         return observation, reward, self.done, info

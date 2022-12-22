@@ -5,14 +5,24 @@ from stable_baselines3.common.evaluation import evaluate_policy
 from stable_baselines3.common.monitor import Monitor
 from colorama import Fore, Style
 from sys import stderr
-from .models import init_model_by_name, get_model_by_name
+from pathlib import Path
+from .models import init_model_by_name, get_model_class_by_name
 
 
 def train(args):
     env = gym.make(args.env, render=args.render, mode=args.mode)
     checkpoint_callback = CheckpointCallback(
         save_freq=args.save_freq, save_path=args.ckpt_path, name_prefix=args.model)
-    model = init_model_by_name(args.model, env=env, verbose=1, seed=args.seed)
+    if args.resume_from:
+        model_class = get_model_class_by_name(args.model)
+        path = Path(args.resume_from)
+        if path.is_file():
+            model = model_class.load(args.resume_from, env=env)
+        else:
+            model = model_class.load(str(path/'final.zip'), env=env)
+    else:
+        model = init_model_by_name(
+            args.model, env=env, verbose=1, seed=args.seed)
     logger = configure(args.log_dir, ["tensorboard"])
     model.set_logger(logger)
     model.learn(total_timesteps=args.total_steps,
@@ -23,7 +33,7 @@ def train(args):
 
 def evaluate(args):
     env = Monitor(gym.make(args.env, render=args.render, mode=args.mode))
-    model_class = get_model_by_name(args.model)
+    model_class = get_model_class_by_name(args.model)
     model = model_class.load(args.model_path, env)
     mean, std = evaluate_policy(
         model, env, n_eval_episodes=args.eval_episodes, render=args.render)
