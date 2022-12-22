@@ -116,6 +116,7 @@ class ParkingLotEnv(gym.Env):
         Load 3d objects
         """
         # 加载地面
+        p.setGravity(0, 0, -10)
         self.ground = p.loadURDF(
             str(ENVIRONMENT_RESOURCES_DIR/"ground.urdf"), basePosition=[0, 0, 0.005], useFixedBase=10)
 
@@ -283,7 +284,6 @@ class ParkingLotEnv(gym.Env):
         if not self.loaded:
             self._load_env()
             self.loaded = True
-        p.setGravity(0, 0, -10)
 
         # 重置小车
         # p.removeBody(self.car.id)
