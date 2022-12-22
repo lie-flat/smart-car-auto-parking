@@ -5,3 +5,7 @@ numpy
 pygame
 pillow
 PyYAML
+colorama~=0.4.6
+stable-baselines3==1.6.2
+pybullet
+gym==0.21.0
