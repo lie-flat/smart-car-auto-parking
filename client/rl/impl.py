@@ -26,5 +26,5 @@ def evaluate(args):
     model_class = get_model_by_name(args.model)
     model = model_class.load(args.model_path, env)
     mean, std = evaluate_policy(
-        model, env, n_eval_episodes=10, render=args.render)
+        model, env, n_eval_episodes=args.eval_episodes, render=args.render)
     print(f"{Fore.YELLOW}Mean reward: {mean}, Std: {std}{Style.RESET_ALL}", file=stderr)
