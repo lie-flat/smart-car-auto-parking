@@ -8,6 +8,8 @@
 
 我们假定您已经阅读并理解了前置作业的相关文档。
 
+注意：Python 版本需要大于等于 3.10！
+
 需要使用如下软件将安卓手机变成 Web Cam: [DroidCam](https://www.dev47apps.com/)。详细信息请见[kxxt 的博客](https://www.kxxt.dev/blog/use-android-devices-as-cameras-in-opencv/)
 
 B 站视频展示和讲解： https://www.bilibili.com/video/BV1N24y1y7Zt/
