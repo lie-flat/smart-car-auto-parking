@@ -1,38 +1,33 @@
 <?xml version="1.0"?>
 <!-- created with Phobos 1.0.1 "Capricious Choutengan" -->
-<robot name="arena">
+<robot name="wall">
 
-  <link name="arena_base">
+  <link name="wall">
     <inertial>
       <contact>
         <lateral_friction value="1"/>
       </contact>
       <origin xyz="0 0 0" rpy="0 0 0"/>
-      <mass value="0.01"/>
-      <inertia ixx="0.001" ixy="0" ixz="0" iyy="0.001" iyz="0" izz="0.0027"/>
+      <mass value="0.001"/>
+      <inertia ixx="0.001" ixy="0" ixz="0" iyy="0.001" iyz="0" izz="0.001"/>
     </inertial>
     <visual name="Cube">
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
-        <box size="6.05 5.075 0.01"/>
+        <box size="1 0.05 0.5"/>
       </geometry>
-      <material name="black"/>
+      <material name="white"/>
     </visual>
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <box size="6.05 5.075 0.01"/>
+        <box size="1 0.05 0.5"/>
       </geometry>
     </collision>
   </link>
 
-  <material name="black">
-    <color rgba="0.29 0.286 0.278 1.0"/>
+  <material name="white">
+    <color rgba=".8 .8 .8 1"/>
   </material>
-  <!-- <gazebo reference="arena_base">
-    <script>
-      <uri>ground.material</uri>
-      <name>Ground</name>
-    </script>
-  </gazebo> -->
+
 </robot>

@@ -26,7 +26,7 @@ class Car:
         self.client = client
         urdfname = car_type + '/' + car_type + '.urdf'
         self.id = p.loadURDF(fileName=urdfname, basePosition=base_position,
-                             baseOrientation=self.base_orientation, globalScaling=1.2)
+                             baseOrientation=self.base_orientation, globalScaling=1.1)
 
         self.steering_joints = [0, 2]
         self.drive_joints = [1, 3, 4, 5]

@@ -7,6 +7,7 @@ import pybullet_data
 import numpy as np
 import time
 from gym import spaces
+from math import pi, sqrt
 
 from .car import Car
 from ..config import ENVIRONMENT_RESOURCES_DIR
@@ -36,6 +37,7 @@ class ParkingLotEnv(gym.Env):
         self.done = False
         self.goal = None
         self.desired_goal = None
+        self.walls = []
 
         self.ground = None
         # 定义状态空间
@@ -104,12 +106,17 @@ class ParkingLotEnv(gym.Env):
                            TARGET_AREA_BOTTOM_LEFT, color, thickness)
         p.addUserDebugLine(TARGET_AREA_TOP_RIGHT,
                            TARGET_AREA_BOTTOM_RIGHT, color, thickness)
+        # Load walls
+        self.walls.append(p.loadURDF(str(ENVIRONMENT_RESOURCES_DIR/"wall.urdf"),
+                                     basePosition=[-0.3, 0.3, 0], baseOrientation=p.getQuaternionFromEuler([0, 0, -pi/3]), useFixedBase=10))
+        self.walls.append(p.loadURDF(str(ENVIRONMENT_RESOURCES_DIR/"wall.urdf"),
+                                     basePosition=[0.95, 0.3, 0], baseOrientation=p.getQuaternionFromEuler([0, 0, -pi/3]), useFixedBase=10))
         # self.basePosition = [-1.5, 1.4, 0.2]
         # self.basePosition = [-0.2, 1.4, 0.2] # 直线入库
-        self.basePosition = [-1.5, 1.45, 0.2] # 斜方入库1
+        self.basePosition = [-1.5, 1.45, 0.2]  # 斜方入库1
         # self.basePosition = [TARGET_X, TARGET_Y, 0.2]
         self.goal = np.array([TARGET_X, TARGET_Y])
-        # self.start_orientation = [0, 0, np.pi * 2 / 2]
+        # self.start_orientation = [0, 0, 2.070143]
         self.start_orientation = [0, 0, np.pi]
         self.target_orientation = 2.070143
         self.desired_goal = np.array([self.goal[0], self.goal[1], 0.0, 0.0, np.cos(
@@ -172,10 +179,10 @@ class ParkingLotEnv(gym.Env):
 
         :return: 是否碰撞
         """
-
-        done = False
-
-        return done
+        for wall in self.walls:
+            if len(p.getContactPoints(self.car.id, wall)) > 0:
+                return True
+        return False
 
     def step(self, action):
         """

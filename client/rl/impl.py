@@ -34,7 +34,9 @@ def train(args):
 def evaluate(args):
     env = Monitor(gym.make(args.env, render=args.render, mode=args.mode))
     model_class = get_model_class_by_name(args.model)
-    model = model_class.load(args.model_path, env)
+    path = Path(args.model_path)
+    model_path = str(path) if path.is_file() else str(path/'final.zip')
+    model = model_class.load(model_path, env)
     mean, std = evaluate_policy(
         model, env, n_eval_episodes=args.eval_episodes, render=args.render)
     print(f"{Fore.YELLOW}Mean reward: {mean}, Std: {std}{Style.RESET_ALL}", file=stderr)

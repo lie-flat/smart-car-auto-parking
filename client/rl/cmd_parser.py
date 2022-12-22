@@ -1,6 +1,5 @@
 import argparse
 from datetime import datetime
-from os import path, makedirs
 
 from ..config.rl import LOG_DIR
 
@@ -33,9 +32,4 @@ def grab_args(parser):
     default_log_dir = LOG_DIR/f'{args.model}_{args.mode}_{time}'
     if not args.log_dir:
         args.log_dir = str(default_log_dir)
-    if not args.ckpt_path:
-        args.ckpt_path = str(default_log_dir/'ckpt')
-    makedirs(args.log_dir, exist_ok=True)
-    makedirs(args.ckpt_path, exist_ok=True)
-    args.model_path = path.join(args.log_dir, "final")
     return args

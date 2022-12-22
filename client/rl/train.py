@@ -1,4 +1,6 @@
-import argparse
+
+from os import makedirs, path
+
 from .cmd_parser import build_parser, grab_args
 from .impl import train, evaluate
 
@@ -19,6 +21,10 @@ def build_train_parser():
 if __name__ == '__main__':
     parser = build_train_parser()
     args = grab_args(parser)
+    if not args.ckpt_path:
+        args.ckpt_path = path.join(args.log_dir, 'ckpt')
+    makedirs(args.log_dir, exist_ok=True)
+    makedirs(args.ckpt_path, exist_ok=True)
     train(args)
     if args.eval_episodes > 0:
         evaluate(args)

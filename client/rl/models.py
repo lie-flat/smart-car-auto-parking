@@ -11,7 +11,6 @@ def get_model_class_by_name(name):
         case _:
             raise ValueError(f"Invalid model {name}!")
 
-
 def get_model_ctor_by_name(name):
     match name:
         case 'dqn':
