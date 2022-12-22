@@ -17,19 +17,17 @@ from ..config.rl import TARGET_AREA_BOTTOM_LEFT, TARGET_AREA_BOTTOM_RIGHT, TARGE
 class ParkingLotEnv(gym.Env):
     metadata = {'render.modes': ['human']}
 
-    def __init__(self, render=False, car_type='husky', mode='1', manual=False, render_video=False):
+    def __init__(self, render=False, car_type='husky', mode='1', render_video=False):
         """
         初始化环境
 
         :param render: 是否渲染GUI界面
         :param car_type: 小车类型（husky）
         :param mode: 任务类型
-        :param manual: 是否手动操作
         :param render_video: 是否渲染视频
         """
         self.loaded = False
         self.car_type = car_type
-        self.manual = manual
         self.mode = mode
         assert self.mode in ['1', '2', '3', '4', '5', '6']
 
@@ -199,10 +197,6 @@ class ParkingLotEnv(gym.Env):
         position = np.array(car_ob[:2])
         distance = self.distance_function(position)
         reward = self.compute_reward(car_ob, self.desired_goal, None)
-
-        if self.manual:
-            print(
-                f'dis: {distance}, reward: {reward}, center: {self.goal}, pos: {car_ob}')
 
         self.done = False
         self.success = False
