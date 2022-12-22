@@ -55,8 +55,8 @@ class ParkingLotEnv(gym.Env):
         self.parked_car2 = None
 
         # 定义状态空间
-        obs_low = np.array([0, 0, -1, -1, -1, -1])
-        obs_high = np.array([20, 20, 1, 1, 1, 1])
+        obs_low = np.array([0, 0, -1, -1, -1, -1], dtype=np.float32)
+        obs_high = np.array([20, 20, 1, 1, 1, 1], dtype=np.float32)
         if multi_obs:
             self.observation_space = spaces.Dict(
                 spaces={
