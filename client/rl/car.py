@@ -8,6 +8,7 @@ from functools import partial
 
 
 from ..config import ENVIRONMENT_RESOURCES_DIR
+from ..config.rl import REAL_CAR_SPEED, REAL_CAR_TURN_SPEED
 from ..controller import control, act
 
 
@@ -56,18 +57,18 @@ class Car:
     def real_car_control(self, action):
         duration = 5 * int(self.action_steps * 1000/240)
         turn_duration = 4 * duration
-        turn_speed = 60
-        speed = 40
         print(duration)
         match action:
             case 0:
-                self.real_act(a=speed, duration=duration)
+                self.real_act(a=REAL_CAR_SPEED, duration=duration)
             case 1:
-                self.real_act(b=speed, duration=duration)
+                self.real_act(b=REAL_CAR_SPEED, duration=duration)
             case 2:
-                self.real_act(servo=12.5, b=turn_speed, duration=turn_duration)
+                self.real_act(servo=12.5, b=REAL_CAR_TURN_SPEED,
+                              duration=turn_duration)
             case 3:
-                self.real_act(servo=2.5, b=turn_speed, duration=turn_duration)
+                self.real_act(servo=2.5, b=REAL_CAR_TURN_SPEED,
+                              duration=turn_duration)
             case 4:
                 self.real_act(duration=duration)
             case _:
@@ -91,13 +92,12 @@ class Car:
 
     def racecar_control(self, action):
         """
-        自定义小车控制
+        racecar 小车控制
         """
-        steering_angle = pi/6
         force = [20] * 4
         steering_angle = pi/6
-        velocity = 2
-        self.action_steps = 3
+        velocity = 5
+        self.action_steps = 5
         match action:
             case 0:
                 p.setJointMotorControlArray(bodyUniqueId=self.id, jointIndices=self.drive_joints,
