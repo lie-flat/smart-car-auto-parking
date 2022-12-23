@@ -17,17 +17,13 @@ from ..config.rl import TARGET_AREA_BOTTOM_LEFT, TARGET_AREA_BOTTOM_RIGHT, TARGE
 class ParkingLotEnv(gym.Env):
     metadata = {'render.modes': ['human']}
 
-    def __init__(self, render=False, car_type='husky', mode='1', render_video=False, max_steps=500):
+    def __init__(self, render=False, car_type='husky', car_scaling=1.1, mode='1', render_video=False, max_steps=500):
         """
         初始化环境
-
-        :param render: 是否渲染GUI界面
-        :param car_type: 小车类型（husky）
-        :param mode: 任务类型
-        :param render_video: 是否渲染视频
         """
         self.loaded = False
         self.car_type = car_type
+        self.car_scaling = car_scaling
         self.mode = mode
         assert self.mode in ['1', '2', '3', '4', '5', '6']
 
@@ -62,7 +58,7 @@ class ParkingLotEnv(gym.Env):
         else:
             self.action_steps = 3
         self.step_cnt = 0
-        self.step_threshold = max_steps
+        self.max_steps = max_steps
 
         if render:
             self.client = p.connect(p.GUI)
@@ -118,7 +114,7 @@ class ParkingLotEnv(gym.Env):
         self.desired_goal = np.array([self.goal[0], self.goal[1], 0.0, 0.0, np.cos(
             self.target_orientation), np.sin(self.target_orientation)])
         self.car = Car(self.client, base_position=self.basePosition, base_orientation_euler=self.start_orientation,
-                       car_type=self.car_type, action_steps=self.action_steps)
+                       car_type=self.car_type, scale=self.car_scaling, action_steps=self.action_steps)
 
     def reset(self):
         """
@@ -199,7 +195,7 @@ class ParkingLotEnv(gym.Env):
             self.done = True
 
         self.step_cnt += 1
-        if self.step_cnt > self.step_threshold:  # 限制episode长度为step_threshold
+        if self.step_cnt > self.max_steps:  # 限制episode长度为step_threshold
             self.done = True
         if car_ob[2] < -2:  # 小车掉出环境
             # print('done! out')

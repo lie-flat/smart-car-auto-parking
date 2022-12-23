@@ -18,6 +18,10 @@ def build_parser(f=lambda _: None):
                         default='', help='log dir')
     parser.add_argument('--model-path', type=str,
                         default='', help='model load/store path')
+    parser.add_argument('--car', type=str, default='husky',
+                        help='car model to use')
+    parser.add_argument('--car-scale', type=float, default=1.1,
+                        help='scaling of the car model')
     parser.add_argument('--mode', type=str, default='1',
                         choices=['1', '2', '3', '4', '5', '6'], help='mode')
     parser.add_argument('--eval-episodes', type=int,

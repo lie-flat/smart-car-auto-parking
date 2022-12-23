@@ -9,17 +9,22 @@ from pathlib import Path
 from .models import init_model_by_name, get_model_class_by_name
 
 
+def make_env(args):
+    return gym.make(args.env, render=args.render, mode=args.mode, car_type=args.car, car_scaling=args.car_scale)
+
+
 def train(args):
-    env = gym.make(args.env, render=args.render, mode=args.mode)
+    env = make_env(args)
     checkpoint_callback = CheckpointCallback(
         save_freq=args.save_freq, save_path=args.ckpt_path, name_prefix=args.model)
     if args.resume_from:
         model_class = get_model_class_by_name(args.model)
         path = Path(args.resume_from)
         if path.is_file():
-            model = model_class.load(args.resume_from, env=env)
+            model_path = args.resume_from
         else:
-            model = model_class.load(str(path/'final.zip'), env=env)
+            model = str(path/'final.zip')
+        model = model_class.load(model_path, env=env)
     else:
         model = init_model_by_name(
             args.model, env=env, verbose=1, seed=args.seed)
@@ -33,7 +38,7 @@ def train(args):
 
 
 def evaluate(args):
-    env = Monitor(gym.make(args.env, render=args.render, mode=args.mode))
+    env = Monitor(make_env(args))
     model_class = get_model_class_by_name(args.model)
     path = Path(args.model_path)
     model_path = str(path) if path.is_file() else str(path/'final.zip')
