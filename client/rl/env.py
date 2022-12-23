@@ -17,7 +17,7 @@ from ..config.rl import TARGET_AREA_BOTTOM_LEFT, TARGET_AREA_BOTTOM_RIGHT, TARGE
 class ParkingLotEnv(gym.Env):
     metadata = {'render.modes': ['human']}
 
-    def __init__(self, render=False, car_type='husky', mode='1', render_video=False):
+    def __init__(self, render=False, car_type='husky', mode='1', render_video=False, max_steps=500):
         """
         初始化环境
 
@@ -62,7 +62,7 @@ class ParkingLotEnv(gym.Env):
         else:
             self.action_steps = 3
         self.step_cnt = 0
-        self.step_threshold = 500
+        self.step_threshold = max_steps
 
         if render:
             self.client = p.connect(p.GUI)
@@ -82,7 +82,6 @@ class ParkingLotEnv(gym.Env):
 
         :param mode: 渲染模式
         """
-
         p.stepSimulation(self.client)
         time.sleep(1. / 240.)
 
@@ -124,17 +123,12 @@ class ParkingLotEnv(gym.Env):
     def reset(self):
         """
         重置环境
-
         """
         if not self.loaded:
             self._load_env()
             self.loaded = True
 
         # 重置小车
-        # p.removeBody(self.car.id)
-        # self.car = Car(self.client, base_position=self.basePosition, base_orientation_euler=self.start_orientation,
-        #    car_type=self.car_type, action_steps=self.action_steps)
-        # p.resetBasePositionAndOrientation(self.car.id)
         self.car.reset()
         # 获取当前observation
         car_ob, self.vector = self.car.get_observation()

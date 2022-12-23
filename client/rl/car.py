@@ -12,11 +12,11 @@ class Car:
         初始化小车
 
         :param client: pybullet client
-        :param basePosition: 小车初始位置
-        :param baseOrientationEuler: 小车初始方向
+        :param base_position: 小车初始位置
+        :param base_orientation_euler: 小车初始方向
         :param max_velocity: 最大速度
         :param max_force: 最大力
-        :param carType: 小车类型
+        :param car_type: 小车类型
         :param action_steps: 动作步数
         """
         self.base_position = base_position or [0, 0, 0.2]

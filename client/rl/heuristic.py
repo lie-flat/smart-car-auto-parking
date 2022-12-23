@@ -3,9 +3,10 @@ import pybullet as p
 from IPython import embed
 
 if __name__ == '__main__':
-    env = gym.make("ParkingLot-v0", render=True, manual=True, mode='1')
+    env = gym.make("ParkingLot-v0", render=True, mode='1')
     env.reset()
     unwrapped = env.unwrapped
+    car = unwrapped.car
     reset = env.reset
 
     def movement_generator(action):
