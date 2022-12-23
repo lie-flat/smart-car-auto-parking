@@ -22,6 +22,8 @@ def build_parser(f=lambda _: None):
                         help='car model to use')
     parser.add_argument('--car-scale', type=float, default=1.1,
                         help='scaling of the car model')
+    parser.add_argument('--real', type=bool, default=False,
+                        help='Real world or not', action=argparse.BooleanOptionalAction)
     parser.add_argument('--mode', type=str, default='1',
                         choices=['1', '2', '3', '4', '5', '6'], help='mode')
     parser.add_argument('--eval-episodes', type=int,

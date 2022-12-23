@@ -10,7 +10,7 @@ from .models import init_model_by_name, get_model_class_by_name
 
 
 def make_env(args):
-    return gym.make(args.env, render=args.render, mode=args.mode, car_type=args.car, car_scaling=args.car_scale)
+    return gym.make(args.env, render=args.render, mode=args.mode, car_type=args.car, car_scaling=args.car_scale, real=args.real)
 
 
 def train(args):

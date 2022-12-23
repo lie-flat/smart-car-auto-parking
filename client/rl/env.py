@@ -7,17 +7,19 @@ import pybullet_data
 import numpy as np
 import time
 from gym import spaces
+from functools import partial
 from math import pi
 
 from .car import Car
 from ..config import ENVIRONMENT_RESOURCES_DIR
 from ..config.rl import TARGET_AREA_BOTTOM_LEFT, TARGET_AREA_BOTTOM_RIGHT, TARGET_AREA_TOP_LEFT, TARGET_AREA_TOP_RIGHT, TARGET_X, TARGET_Y
+from ..controller import connect_to_board, act
 
 
 class ParkingLotEnv(gym.Env):
     metadata = {'render.modes': ['human']}
 
-    def __init__(self, render=False, car_type='husky', car_scaling=1.1, mode='1', render_video=False, max_steps=500):
+    def __init__(self, render=False, car_type='husky', car_scaling=1.1, mode='1', render_video=False, max_steps=500, real=False):
         """
         初始化环境
         """
@@ -69,6 +71,11 @@ class ParkingLotEnv(gym.Env):
         if render and render_video:
             p.configureDebugVisualizer(p.COV_ENABLE_RENDERING, 0)
             p.configureDebugVisualizer(p.COV_ENABLE_GUI, 0)
+        if real:
+            devices = connect_to_board()
+            self.real_car_ip = devices['board']
+        else:
+            self.real_car_ip = None
         p.setAdditionalSearchPath(pybullet_data.getDataPath())
         p.setGravity(0, 0, -10)
 
@@ -114,7 +121,7 @@ class ParkingLotEnv(gym.Env):
         self.desired_goal = np.array([self.goal[0], self.goal[1], 0.0, 0.0, np.cos(
             self.target_orientation), np.sin(self.target_orientation)])
         self.car = Car(self.client, base_position=self.basePosition, base_orientation_euler=self.start_orientation,
-                       car_type=self.car_type, scale=self.car_scaling, action_steps=self.action_steps)
+                       car_type=self.car_type, scale=self.car_scaling, action_steps=self.action_steps, real_car_ip=self.real_car_ip)
 
     def reset(self):
         """
@@ -196,6 +203,7 @@ class ParkingLotEnv(gym.Env):
 
         self.step_cnt += 1
         if self.step_cnt > self.max_steps:  # 限制episode长度为step_threshold
+            print("MAxStEp")
             self.done = True
         if car_ob[2] < -2:  # 小车掉出环境
             # print('done! out')
