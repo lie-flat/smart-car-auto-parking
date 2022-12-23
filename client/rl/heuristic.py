@@ -1,9 +1,15 @@
 import gym
 import pybullet as p
 from IPython import embed
+from .cmd_parser import build_parser, grab_args
+from .impl import make_env
+from time import sleep
 
 if __name__ == '__main__':
-    env = gym.make("ParkingLot-v0", render=True, mode='1')
+    parser = build_parser()
+    args = grab_args(parser)
+    args.render = True
+    env = make_env(args)
     env.reset()
     unwrapped = env.unwrapped
     car = unwrapped.car
