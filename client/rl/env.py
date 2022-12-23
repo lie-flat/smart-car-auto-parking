@@ -7,7 +7,7 @@ import pybullet_data
 import numpy as np
 import time
 from gym import spaces
-from math import pi, sqrt
+from math import pi
 
 from .car import Car
 from ..config import ENVIRONMENT_RESOURCES_DIR
@@ -91,7 +91,6 @@ class ParkingLotEnv(gym.Env):
         Load 3d objects
         """
         # 加载地面
-        p.setGravity(0, 0, -10)
         self.ground = p.loadURDF(
             str(ENVIRONMENT_RESOURCES_DIR/"ground.urdf"), basePosition=[0, 0, 0.005], useFixedBase=10)
         thickness = 2.5

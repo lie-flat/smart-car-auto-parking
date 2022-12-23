@@ -25,6 +25,7 @@ def train(args):
             args.model, env=env, verbose=1, seed=args.seed)
     logger = configure(args.log_dir, ["tensorboard"])
     model.set_logger(logger)
+    env.reset()
     model.learn(total_timesteps=args.total_steps,
                 callback=checkpoint_callback)
     model.save(args.model_path)
@@ -37,6 +38,7 @@ def evaluate(args):
     path = Path(args.model_path)
     model_path = str(path) if path.is_file() else str(path/'final.zip')
     model = model_class.load(model_path, env)
+    env.reset()
     mean, std = evaluate_policy(
         model, env, n_eval_episodes=args.eval_episodes, render=args.render)
     print(f"{Fore.YELLOW}Mean reward: {mean}, Std: {std}{Style.RESET_ALL}", file=stderr)
