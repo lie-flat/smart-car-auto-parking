@@ -1,16 +1,15 @@
 import requests
 import json
-from os import path
 from socket import socket, AF_INET, SOCK_DGRAM
+from ..config import BASE_DIR
 FRAME_HEADER = "lie-flat device discovery!"
 
-CACHE_PATH = path.join(path.dirname(__file__), '..',
-                       '..', 'devices.cache.json')
+CACHE_PATH = BASE_DIR/'devices.cache.json'
 
 
 def connect_to_board():
-    if path.isfile(CACHE_PATH):
-        with open(CACHE_PATH, 'r') as f:
+    if CACHE_PATH.is_file():
+        with CACHE_PATH.open() as f:
             devices = json.load(f)
         response = requests.post(
             "http://" + devices['board'] + "/init")
@@ -45,7 +44,7 @@ def connect_to_board():
                     devices[name] = ip
             except:
                 continue
-    with open(CACHE_PATH, 'w') as f:
+    with CACHE_PATH.open('w') as f:
         json.dump(devices, f)
     return devices
 
