@@ -25,6 +25,8 @@ class Car:
         :param max_force: 最大力
         :param car_type: 小车类型
         :param action_steps: 动作步数
+        :param scale: 模型放缩系数
+        :param real_car_ip: 真实小车 IP，填 None 禁用
         """
         self.base_position = base_position or [0, 0, 0.2]
         self.base_orientation = p.getQuaternionFromEuler(
@@ -114,14 +116,14 @@ class Car:
                                             controlMode=p.POSITION_CONTROL,
                                             targetPositions=[steering_angle]*2,
                                             physicsClientId=self.client)
-                for _ in range(self.action_steps):
+                for _ in range(self.action_steps * 4):
                     p.stepSimulation()
             case 3:
                 p.setJointMotorControlArray(self.id, self.steering_joints,
                                             controlMode=p.POSITION_CONTROL,
                                             targetPositions=[-steering_angle]*2,
                                             physicsClientId=self.client)
-                for _ in range(self.action_steps):
+                for _ in range(self.action_steps * 4):
                     p.stepSimulation()
             case 4:
                 p.setJointMotorControlArray(bodyUniqueId=self.id, jointIndices=self.drive_joints,
@@ -158,7 +160,6 @@ class Car:
             case 2:  # 左转
                 targetVel = 3
                 for _ in range(self.action_steps * 4):
-                    # for joint in range(2, 6):
                     for joint in range(1, 3):
                         p.setJointMotorControl2(self.id, 2 * joint + 1, p.VELOCITY_CONTROL,
                                                 targetVelocity=targetVel, force=force)
@@ -169,7 +170,6 @@ class Car:
             case 3:  # 右转
                 targetVel = 3
                 for _ in range(self.action_steps * 4):
-                    # for joint in range(2, 6):
                     for joint in range(1, 3):
                         p.setJointMotorControl2(self.id, 2 * joint, p.VELOCITY_CONTROL, targetVelocity=targetVel,
                                                 force=force)

@@ -7,19 +7,18 @@ import pybullet_data
 import numpy as np
 import time
 from gym import spaces
-from functools import partial
 from math import pi
 
 from .car import Car
 from ..config import ENVIRONMENT_RESOURCES_DIR
 from ..config.rl import TARGET_AREA_BOTTOM_LEFT, TARGET_AREA_BOTTOM_RIGHT, TARGET_AREA_TOP_LEFT, TARGET_AREA_TOP_RIGHT, TARGET_X, TARGET_Y
-from ..controller import connect_to_board, act
+from ..controller import connect_to_board
 
 
 class ParkingLotEnv(gym.Env):
     metadata = {'render.modes': ['human']}
 
-    def __init__(self, render=False, car_type='husky', car_scaling=1.1, mode='1', render_video=False, max_steps=500, real=False):
+    def __init__(self, render=False, car_type='husky', car_scaling=1.1, mode='1', max_steps=500, real=False, view=False):
         """
         初始化环境
         """
@@ -27,8 +26,7 @@ class ParkingLotEnv(gym.Env):
         self.car_type = car_type
         self.car_scaling = car_scaling
         self.mode = mode
-        assert self.mode in ['1', '2', '3', '4', '5', '6']
-
+        self.view = view
         self.car = None
         self.done = False
         self.goal = None
@@ -44,33 +42,28 @@ class ParkingLotEnv(gym.Env):
 
         # 定义动作空间
         self.action_space = spaces.Discrete(4)  # 4种动作：前进、后退、左转、右转
-
-        # self.reward_weights = np.array([1, 0.3, 0, 0, 0.02, 0.02])
-        if self.mode == '4':
-            self.reward_weights = np.array([0.4, 0.9, 0, 0, 0.1, 0.1])
-        elif self.mode == '5':
-            self.reward_weights = np.array([0.65, 0.65, 0, 0, 0.1, 0.1])
-        else:
-            self.reward_weights = np.array([1, 0.3, 0, 0, 0.1, 0.1])
+        self.reward_weights = np.array([1, 0.3, 0, 0, 0.1, 0.1])
         self.target_orientation = None
         self.start_orientation = None
 
-        if self.mode in ['1', '2', '3', '5', '6']:
-            self.action_steps = 5
-        else:
-            self.action_steps = 3
+        self.action_steps = 5
         self.step_cnt = 0
         self.max_steps = max_steps
 
         if render:
-            self.client = p.connect(p.GUI)
-            time.sleep(1. / 240.)
+            self.client = p.connect(
+                p.GUI, options='--width=640 --height=480' if view else '')
+            # Disable default controls
+            p.configureDebugVisualizer(p.COV_ENABLE_GUI, 0)
+            p.resetDebugVisualizerCamera(
+                cameraDistance=3.2,
+                cameraYaw=0,
+                cameraPitch=-75,
+                cameraTargetPosition=[0, 0, 0]
+            )
         else:
             self.client = p.connect(p.DIRECT)
-            time.sleep(1. / 240.)
-        if render and render_video:
-            p.configureDebugVisualizer(p.COV_ENABLE_RENDERING, 0)
-            p.configureDebugVisualizer(p.COV_ENABLE_GUI, 0)
+        time.sleep(1. / 240.)
         if real:
             devices = connect_to_board()
             self.real_car_ip = devices['board']
@@ -79,11 +72,9 @@ class ParkingLotEnv(gym.Env):
         p.setAdditionalSearchPath(pybullet_data.getDataPath())
         p.setGravity(0, 0, -10)
 
-    def render(self, mode='human'):
+    def render(self):
         """
         渲染当前画面
-
-        :param mode: 渲染模式
         """
         p.stepSimulation(self.client)
         time.sleep(1. / 240.)
