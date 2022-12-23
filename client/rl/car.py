@@ -5,9 +5,12 @@ import pybullet as p
 import numpy as np
 
 
+from ..config import ENVIRONMENT_RESOURCES_DIR
+
+
 class Car:
     def __init__(self, client, base_position=None, base_orientation_euler=None,
-                 max_velocity=6, max_force=100, car_type='husky', action_steps=None):
+                 max_velocity=6, max_force=100, car_type='husky', action_steps=5, scale=1.1):
         """
         初始化小车
 
@@ -24,9 +27,15 @@ class Car:
             base_orientation_euler or [0, 0, np.pi / 2])
 
         self.client = client
-        urdfname = car_type + '/' + car_type + '.urdf'
-        self.id = p.loadURDF(fileName=urdfname, basePosition=base_position,
-                             baseOrientation=self.base_orientation, globalScaling=1.1)
+        match car_type:
+            case 'husky':
+                urdf_path = f"{car_type}/{car_type}.urdf"
+                self.apply_action = self.husky_control
+            case car:
+                urdf_path = str(ENVIRONMENT_RESOURCES_DIR / f"{car}.urdf")
+                self.apply_action = self.car_control
+        self.id = p.loadURDF(fileName=urdf_path, basePosition=base_position,
+                             baseOrientation=self.base_orientation, globalScaling=scale)
 
         self.steering_joints = [0, 2]
         self.drive_joints = [1, 3, 4, 5]
@@ -35,32 +44,46 @@ class Car:
         self.max_force = max_force
         self.action_steps = action_steps
 
-    def apply_action(self, action):
+    def car_control(self, action):
         """
-        小车执行动作
+        自定义小车控制
+        """
+        match action:
+            case 0:
+                pass
+            case 1:
+                pass
+            case 2:
+                pass
+            case 3:
+                pass
+            case _:
+                raise ValueError("Invalid action!")
 
-        :param action: 动作
+    def husky_control(self, action):
+        """
+        Husky 小车控制
         """
 
         velocity = self.max_velocity
         force = self.max_force
-
-        if action == 0:  # 前进
-            for _ in range(self.action_steps):
-                for joint in range(2, 6):
-                    p.setJointMotorControl2(
-                        self.id, joint, p.VELOCITY_CONTROL, targetVelocity=velocity, force=force)
-                p.stepSimulation()
-        elif action == 1:  # 后退
-            for _ in range(self.action_steps):
-                for joint in range(2, 6):
-                    p.setJointMotorControl2(
-                        self.id, joint, p.VELOCITY_CONTROL, targetVelocity=-velocity, force=force)
-                p.stepSimulation()
-        elif action == 2:  # 左转
-            targetVel = 3
-            for _ in range(self.action_steps):
-                for joint in range(2, 6):
+        match action:
+            case 0:  # 前进
+                for _ in range(self.action_steps):
+                    for joint in range(2, 6):
+                        p.setJointMotorControl2(
+                            self.id, joint, p.VELOCITY_CONTROL, targetVelocity=velocity, force=force)
+                    p.stepSimulation()
+            case 1:  # 后退
+                for _ in range(self.action_steps):
+                    for joint in range(2, 6):
+                        p.setJointMotorControl2(
+                            self.id, joint, p.VELOCITY_CONTROL, targetVelocity=-velocity, force=force)
+                    p.stepSimulation()
+            case 2:  # 左转
+                targetVel = 3
+                for _ in range(self.action_steps * 4):
+                    # for joint in range(2, 6):
                     for joint in range(1, 3):
                         p.setJointMotorControl2(self.id, 2 * joint + 1, p.VELOCITY_CONTROL,
                                                 targetVelocity=targetVel, force=force)
@@ -68,10 +91,10 @@ class Car:
                         p.setJointMotorControl2(self.id, 2 * joint, p.VELOCITY_CONTROL, targetVelocity=-targetVel,
                                                 force=force)
                     p.stepSimulation()
-        elif action == 3:  # 右转
-            targetVel = 3
-            for _ in range(self.action_steps):
-                for joint in range(2, 6):
+            case 3:  # 右转
+                targetVel = 3
+                for _ in range(self.action_steps * 4):
+                    # for joint in range(2, 6):
                     for joint in range(1, 3):
                         p.setJointMotorControl2(self.id, 2 * joint, p.VELOCITY_CONTROL, targetVelocity=targetVel,
                                                 force=force)
@@ -79,14 +102,14 @@ class Car:
                         p.setJointMotorControl2(self.id, 2 * joint + 1, p.VELOCITY_CONTROL,
                                                 targetVelocity=-targetVel, force=force)
                     p.stepSimulation()
-        elif action == 4:  # 停止
-            targetVel = 0
-            for joint in range(2, 6):
-                p.setJointMotorControl2(self.id, joint, p.VELOCITY_CONTROL, targetVelocity=targetVel,
-                                        force=force)
-            p.stepSimulation()
-        else:
-            raise ValueError
+            case 4:  # 停止
+                targetVel = 0
+                for joint in range(2, 6):
+                    p.setJointMotorControl2(self.id, joint, p.VELOCITY_CONTROL, targetVelocity=targetVel,
+                                            force=force)
+                p.stepSimulation()
+            case _:
+                raise ValueError("Invalid action!")
 
     def get_observation(self):
         """
