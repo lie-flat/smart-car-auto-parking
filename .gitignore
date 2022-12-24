@@ -5,3 +5,4 @@ firmware/build
 misc
 devices.cache.json
 logs/
+*.shm.lock
