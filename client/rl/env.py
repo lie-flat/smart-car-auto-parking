@@ -18,33 +18,38 @@ from ..controller import connect_to_board
 class ParkingLotEnv(gym.Env):
     metadata = {'render.modes': ['human']}
 
-    def __init__(self, render=False, car_type='husky', car_scaling=1.1, mode='1', max_steps=500, real=False, view=False):
+    def __init__(self, render=False, car_type='husky', car_scaling=1.1,
+                 max_steps=500, real=False, view=False, init_x=-1.5, init_y=1.45, init_theta=np.pi):
         """
         初始化环境
         """
-        self.loaded = False
         self.car_type = car_type
         self.car_scaling = car_scaling
-        self.mode = mode
         self.view = view
         self.car = None
+        self.loaded = False
         self.done = False
         self.goal = None
         self.desired_goal = None
         self.walls = []
-
         self.ground = None
+        self.init_position = [init_x, init_y, 0.2]
+        self.init_orientation = [0, 0, init_theta]
+
         # 定义状态空间
-        obs_low = np.array([0, 0, -1, -1, -1, -1], dtype=np.float32)
-        obs_high = np.array([20, 20, 1, 1, 1, 1], dtype=np.float32)
+        obs_low = np.array([-4, -4, -1, -1, -1, -1], dtype=np.float32)
+        obs_high = np.array([4, 4, 1, 1, 1, 1], dtype=np.float32)
         self.observation_space = spaces.Box(
             low=obs_low, high=obs_high, dtype=np.float32)
 
         # 定义动作空间
         self.action_space = spaces.Discrete(4)  # 4种动作：前进、后退、左转、右转
         self.reward_weights = np.array([1, 0.3, 0, 0, 0.1, 0.1])
-        self.target_orientation = None
-        self.start_orientation = None
+        self.goal = np.array([TARGET_X, TARGET_Y])
+        self.target_orientation = 2 * np.pi / 3
+        # self.target_orientation = 2.070143
+        self.desired_goal = np.array([self.goal[0], self.goal[1], 0.0, 0.0, np.cos(
+            self.target_orientation), np.sin(self.target_orientation)])
 
         self.action_steps = 5
         self.step_cnt = 0
@@ -103,15 +108,10 @@ class ParkingLotEnv(gym.Env):
                                      basePosition=[0.95, 0.3, 0], baseOrientation=p.getQuaternionFromEuler([0, 0, -pi/3]), useFixedBase=10))
         # self.basePosition = [-1.5, 1.4, 0.2]
         # self.basePosition = [-0.2, 1.4, 0.2] # 直线入库
-        self.basePosition = [-1.5, 1.45, 0.2]  # 斜方入库1
+        # self.basePosition = [-1.5, 1.45, 0.2]  # 斜方入库1
         # self.basePosition = [TARGET_X, TARGET_Y, 0.2]
-        self.goal = np.array([TARGET_X, TARGET_Y])
-        # self.start_orientation = [0, 0, 2.070143]
-        self.start_orientation = [0, 0, np.pi]
-        self.target_orientation = 2.070143
-        self.desired_goal = np.array([self.goal[0], self.goal[1], 0.0, 0.0, np.cos(
-            self.target_orientation), np.sin(self.target_orientation)])
-        self.car = Car(self.client, base_position=self.basePosition, base_orientation_euler=self.start_orientation,
+
+        self.car = Car(self.client, base_position=self.init_position, base_orientation_euler=self.init_orientation,
                        car_type=self.car_type, scale=self.car_scaling, action_steps=self.action_steps, real_car_ip=self.real_car_ip)
 
     def reset(self):
@@ -142,21 +142,11 @@ class ParkingLotEnv(gym.Env):
 
         return np.sqrt(pow(pos[0] - self.goal[0], 2) + pow(pos[1] - self.goal[1], 2))
 
-    def compute_reward(self, achieved_goal, desired_goal, info):
+    def compute_reward(self, obs):
         """
         计算当前步的奖励
-
-        :param achieved_goal: 小车当前位置 [x, y, z]
-        :param desired_goal: 目标点 [x, y, z]
-        :param info: 信息
-        :return: 奖励
         """
-
-        p_norm = 0.5
-        reward = -np.power(np.dot(np.abs(achieved_goal - desired_goal),
-                                  np.array(self.reward_weights)), p_norm)
-
-        return reward
+        return -np.sqrt(np.dot(np.abs(obs - self.desired_goal), self.reward_weights))
 
     def judge_collision(self):
         """
@@ -183,12 +173,12 @@ class ParkingLotEnv(gym.Env):
 
         position = np.array(car_ob[:2])
         distance = self.distance_function(position)
-        reward = self.compute_reward(car_ob, self.desired_goal, None)
+        reward = self.compute_reward(car_ob)
 
         self.done = False
         self.success = False
 
-        if distance < 0.2:
+        if distance < 0.15:
             self.success = True
             self.done = True
 

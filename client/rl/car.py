@@ -205,7 +205,7 @@ class Car:
         orientation = [np.cos(angle[2]), np.sin(angle[2])]
         vector = angle[2]
 
-        observation = np.array(position + velocity + orientation)  # 拼接坐标、速度、角度
+        observation = np.r_[position, velocity, orientation]
 
         return observation, vector
 
