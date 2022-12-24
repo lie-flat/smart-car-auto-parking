@@ -15,7 +15,7 @@ CV_FONT = cv.FONT_HERSHEY_DUPLEX
 CV_COLOR = (255, 0, 255)
 
 img_result = np.zeros(IMG_RESULT_SHAPE, dtype=np.uint8)
-img_warp = np.zeros(IMG_WARP_SHAPE, dtype=np.uint8)
+rl_info_area = np.zeros((480, 640, 3), dtype=np.uint8)
 
 analytics_reader = AnalyticsReader()
 analytics = {}
@@ -35,13 +35,13 @@ Success: True/False
 """
 
 
-draw_rl_info = partial(cv.putText, img_warp, fontFace=CV_FONT, fontScale=FONT_SCALE,
+draw_rl_info = partial(cv.putText, rl_info_area, fontFace=CV_FONT, fontScale=FONT_SCALE,
                        color=CV_COLOR, thickness=FONT_LINE_WIDTH, lineType=cv.LINE_AA)
 
 
 def update_rl_info():
     analytics_reader.read_to_dict(analytics)
-    img_warp.fill(255)
+    rl_info_area.fill(255)
     draw_rl_info(text=f"Last Action: {analytics['last_action']}", org=(10, 40))
     draw_rl_info(text=f"Last Reward: {analytics['last_reward']}", org=(10, 80))
     draw_rl_info(
@@ -60,7 +60,7 @@ else:
 
 
 def main():
-    global img_result, img_warp
+    global img_result, rl_info_area
     cv.namedWindow("frame", cv.WINDOW_NORMAL)
     cv.setWindowProperty("frame", cv.WND_PROP_FULLSCREEN, cv.WINDOW_FULLSCREEN)
     vid = get_phone_video()
@@ -76,13 +76,11 @@ def main():
         frame, rotation, translation, rotation_world, translation_world \
             = estimate_pose_and_draw(frame)
         update_rl_info()
-        log.info("Pose estimated")
         new_frame_time = time()
         fps = 1/(new_frame_time-prev_frame_time)
         prev_frame_time = new_frame_time
-        all_concat = cat(frame, img_result, img_warp, translation_world,
+        all_concat = cat(frame, img_result, rl_info_area, translation_world,
                          rotation_world, translation, rotation, fps)
-        log.info("Concatnated")
         cv.imshow("frame", all_concat)
         if writer is not None:
             writer.write(all_concat)

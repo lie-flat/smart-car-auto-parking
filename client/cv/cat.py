@@ -93,10 +93,13 @@ def cat(phone_cam, road_mask, road_perspective, world_trans, world_rot, cam_tran
     info_area.fill(255)
     visual.fill(255)
     # Resize inputs
+
     road_mask = cv.resize(road_mask, (PHONE_CAM_WIDTH, PHONE_CAM_HEIGHT))
-    road_perspective = cv.cvtColor(road_perspective, cv.COLOR_GRAY2BGR)
-    road_perspective = cv.resize(
-        road_perspective, (PHONE_CAM_WIDTH, PHONE_CAM_HEIGHT))
+    if road_perspective.shape != (480, 640, 3):
+        # Not in RL Mode.
+        road_perspective = cv.cvtColor(road_perspective, cv.COLOR_GRAY2BGR)
+        road_perspective = cv.resize(
+            road_perspective, (PHONE_CAM_WIDTH, PHONE_CAM_HEIGHT))
     # Null coalescing
     world_trans = null_coalesce(world_trans, PLACEHOLDER)
     cam_trans = null_coalesce(cam_trans, PLACEHOLDER)
