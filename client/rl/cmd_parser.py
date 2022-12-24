@@ -15,8 +15,8 @@ def build_parser(f=lambda _: None):
                         help='name of the environment to run')
     parser.add_argument('--render', type=bool, default=False,
                         help='render the environment', action=argparse.BooleanOptionalAction)
-    parser.add_argument('--view', type=bool, default=False,
-                        help='view mode.', action=argparse.BooleanOptionalAction)
+    parser.add_argument('--presentation', type=bool, default=False,
+                        help='presentation mode.', action=argparse.BooleanOptionalAction)
     parser.add_argument('--seed', type=int, default=0,
                         help='random seed (default: 0)')
     parser.add_argument('--log-dir', type=str,

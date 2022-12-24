@@ -18,15 +18,15 @@ class ParkingLotEnv(ParkingLotEnvBase):
     metadata = {'render.modes': ['human']}
 
     def __init__(self, render=False, car_type='husky', car_scaling=1.1,
-                 max_steps=500, real=False, view=False, init_x=-1.5, init_y=1.45, init_theta=np.pi):
+                 max_steps=500, real=False, presentation_mode=False, init_x=-1.5, init_y=1.45, init_theta=np.pi):
         """
         初始化环境
         """
         super().__init__(max_steps=max_steps, init_x=init_x,
-                         init_y=init_y, init_theta=init_theta)
+                         init_y=init_y, init_theta=init_theta, enable_collector=presentation_mode)
         self.car_type = car_type
         self.car_scaling = car_scaling
-        self.view = view
+        self.presentation_mode = presentation_mode
         self.car = None
 
         self.walls = []
@@ -34,7 +34,7 @@ class ParkingLotEnv(ParkingLotEnvBase):
 
         if render:
             self.client = p.connect(
-                p.GUI, options='--width=640 --height=480' if view else '')
+                p.GUI, options='--width=640 --height=480' if presentation_mode else '')
             # Disable default controls
             p.configureDebugVisualizer(p.COV_ENABLE_GUI, 0)
             p.resetDebugVisualizerCamera(

@@ -6,4 +6,4 @@ IS_RASPBERRYPI = user == 'pi'
 
 print(f"Running on {'Raspberry Pi' if IS_RASPBERRYPI else 'PC'}")
 
-ip = '192.168.12.222'
+ip = '192.168.12.111'
