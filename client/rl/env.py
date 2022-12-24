@@ -1,21 +1,20 @@
 # Adapted from https://github.com/RyanLiu112/RL_parking ,
 # which originates from https://github.com/Robotics-Club-IIT-BHU/gym-carpark
 
-import gym
 import pybullet as p
 import pybullet_data
 import numpy as np
 import time
-from gym import spaces
 from math import pi
 
 from .car import Car
+from .base import ParkingLotEnvBase
 from ..config import ENVIRONMENT_RESOURCES_DIR
 from ..config.rl import TARGET_AREA_BOTTOM_LEFT, TARGET_AREA_BOTTOM_RIGHT, TARGET_AREA_TOP_LEFT, TARGET_AREA_TOP_RIGHT, TARGET_X, TARGET_Y
 from ..controller import connect_to_board
 
 
-class ParkingLotEnv(gym.Env):
+class ParkingLotEnv(ParkingLotEnvBase):
     metadata = {'render.modes': ['human']}
 
     def __init__(self, render=False, car_type='husky', car_scaling=1.1,
@@ -23,37 +22,15 @@ class ParkingLotEnv(gym.Env):
         """
         初始化环境
         """
+        super().__init__(max_steps=max_steps, init_x=init_x,
+                         init_y=init_y, init_theta=init_theta)
         self.car_type = car_type
         self.car_scaling = car_scaling
         self.view = view
         self.car = None
-        self.loaded = False
-        self.done = False
-        self.goal = None
-        self.desired_goal = None
+
         self.walls = []
         self.ground = None
-        self.init_position = [init_x, init_y, 0.2]
-        self.init_orientation = [0, 0, init_theta]
-
-        # 定义状态空间
-        obs_low = np.array([-4, -4, -1, -1, -1, -1], dtype=np.float32)
-        obs_high = np.array([4, 4, 1, 1, 1, 1], dtype=np.float32)
-        self.observation_space = spaces.Box(
-            low=obs_low, high=obs_high, dtype=np.float32)
-
-        # 定义动作空间
-        self.action_space = spaces.Discrete(4)  # 4种动作：前进、后退、左转、右转
-        self.reward_weights = np.array([1, 0.3, 0, 0, 0.1, 0.1])
-        self.goal = np.array([TARGET_X, TARGET_Y])
-        self.target_orientation = 2 * np.pi / 3
-        # self.target_orientation = 2.070143
-        self.desired_goal = np.array([self.goal[0], self.goal[1], 0.0, 0.0, np.cos(
-            self.target_orientation), np.sin(self.target_orientation)])
-
-        self.action_steps = 5
-        self.step_cnt = 0
-        self.max_steps = max_steps
 
         if render:
             self.client = p.connect(
@@ -77,7 +54,7 @@ class ParkingLotEnv(gym.Env):
         p.setAdditionalSearchPath(pybullet_data.getDataPath())
         p.setGravity(0, 0, -10)
 
-    def render(self):
+    def render(self, _mode):
         """
         渲染当前画面
         """
@@ -118,9 +95,7 @@ class ParkingLotEnv(gym.Env):
         """
         重置环境
         """
-        if not self.loaded:
-            self._load_env()
-            self.loaded = True
+        super().reset()
 
         # 重置小车
         self.car.reset()
@@ -132,27 +107,9 @@ class ParkingLotEnv(gym.Env):
 
         return observation
 
-    def distance_function(self, pos):
-        """
-        计算小车与目标点的距离（2-范数）
-
-        :param pos: 小车当前坐标 [x, y, z]
-        :return: 小车与目标点的距离
-        """
-
-        return np.sqrt(pow(pos[0] - self.goal[0], 2) + pow(pos[1] - self.goal[1], 2))
-
-    def compute_reward(self, obs):
-        """
-        计算当前步的奖励
-        """
-        return -np.sqrt(np.dot(np.abs(obs - self.desired_goal), self.reward_weights))
-
     def judge_collision(self):
         """
-        判断小车与墙壁、停放着的小车是否碰撞
-
-        :return: 是否碰撞
+        判断小车与墙壁是否碰撞
         """
         for wall in self.walls:
             if len(p.getContactPoints(self.car.id, wall)) > 0:
@@ -201,16 +158,6 @@ class ParkingLotEnv(gym.Env):
         info = {'is_success': self.success}
 
         return observation, reward, self.done, info
-
-    def seed(self, seed=None):
-        """
-        设置环境种子
-
-        :param seed: 种子
-        :return: [seed]
-        """
-        self.np_random, seed = gym.utils.seeding.np_random(seed)
-        return [seed]
 
     def close(self):
         """

@@ -1,6 +1,7 @@
 import argparse
 from datetime import datetime
 import math
+from os import path
 import numpy as np
 
 from ..config.rl import LOG_DIR
@@ -48,4 +49,6 @@ def grab_args(parser):
         f'{args.model}_{args.init_x:.2},{args.init_y:.2},{args.init_theta:.2}_{time}'
     if not args.log_dir:
         args.log_dir = str(default_log_dir)
+    if not args.model_path:
+        args.model_path = path.join(args.log_dir, "final.zip")
     return args

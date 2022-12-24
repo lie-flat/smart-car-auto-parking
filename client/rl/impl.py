@@ -42,8 +42,10 @@ def train(args):
 def evaluate(args):
     env = Monitor(make_env(args))
     model_class = get_model_class_by_name(args.model)
+
     path = Path(args.model_path)
-    model_path = str(path) if path.is_file() else str(path/'final.zip')
+    model_path = str(path).removesuffix(
+        ".zip") if path.is_file() else str(path/'final')
     model = model_class.load(model_path, env)
     env.reset()
     mean, std = evaluate_policy(
