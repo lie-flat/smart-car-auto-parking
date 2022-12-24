@@ -101,9 +101,8 @@ class ParkingLotEnv(ParkingLotEnvBase):
         self.car.reset()
         # 获取当前observation
         car_ob, self.vector = self.car.get_observation()
-        observation = np.array(list(car_ob))
 
-        return observation
+        return car_ob
 
     def judge_collision(self):
         """
@@ -124,16 +123,17 @@ class ParkingLotEnv(ParkingLotEnvBase):
 
         self.car.apply_action(action)  # 小车执行动作
         p.stepSimulation()
-        car_ob, self.vector = self.car.get_observation()  # 获取小车状态
+        observation, self.vector = self.car.get_observation()  # 获取小车状态
 
-        position = np.array(car_ob[:2])
+        position = observation[:2]
         distance = self.distance_function(position)
-        reward = self.compute_reward(car_ob)
+        reward = self.compute_reward(observation)
 
         self.done = False
         self.success = False
 
         if distance < 0.15:
+            print("Success")
             self.success = True
             self.done = True
 
@@ -141,16 +141,16 @@ class ParkingLotEnv(ParkingLotEnvBase):
         if self.step_cnt > self.max_steps:  # 限制episode长度为step_threshold
             print("MAxStEp")
             self.done = True
-        if car_ob[2] < -2:  # 小车掉出环境
-            # print('done! out')
+        if self.vector[1] < -1:  # 小车掉出环境
+            print('Out of env')
             reward = -500
             self.done = True
         if self.judge_collision():  # 碰撞
-            # print('done! collision')
+            print('Collision with walls')
             reward = -500
             self.done = True
 
-        observation = np.array(list(car_ob))
+        observation = observation
 
         info = {'is_success': self.success}
         self.cummulative_reward += reward

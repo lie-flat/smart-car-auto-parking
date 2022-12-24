@@ -199,13 +199,10 @@ class Car:
         position, angle = p.getBasePositionAndOrientation(self.id)  # 获取小车位姿
         angle = p.getEulerFromQuaternion(angle)
         velocity = p.getBaseVelocity(self.id)[0]
-
-        position = [position[0], position[1]]
-        velocity = [velocity[0], velocity[1]]
         orientation = [np.cos(angle[2]), np.sin(angle[2])]
-        vector = angle[2]
-
-        observation = np.r_[position, velocity, orientation]
+        vector = np.array([angle[2], position[2]])
+        # print(position[2])
+        observation = np.r_[position[:2], velocity[:2], orientation]
 
         return observation, vector
 

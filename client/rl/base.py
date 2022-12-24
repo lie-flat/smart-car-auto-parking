@@ -3,9 +3,7 @@
 
 import gym
 import numpy as np
-import time
 from gym import spaces
-from math import pi
 from abc import abstractmethod
 
 from ..config.rl import TARGET_X, TARGET_Y
@@ -40,7 +38,7 @@ class ParkingLotEnvBase(gym.Env):
         self.reward_weights = np.array([1, 0.3, 0, 0, 0.1, 0.1])
         self.goal = np.array([TARGET_X, TARGET_Y])
         self.target_orientation = 2 * np.pi / 3
-        # self.target_orientation = 2.070143
+
         self.desired_goal = np.array([self.goal[0], self.goal[1], 0.0, 0.0, np.cos(
             self.target_orientation), np.sin(self.target_orientation)])
 
