@@ -10,3 +10,4 @@ stable-baselines3==1.6.2
 pybullet
 gym==0.21.0
 filelock~=3.8.2
+spatialmath-python~=1.0.3
