@@ -1,4 +1,5 @@
 from math import sqrt
+import numpy as np
 
 from .common import BASE_DIR
 
@@ -25,3 +26,13 @@ TARGET_Y = (TARGET_AREA_TOP_LEFT[1] + TARGET_AREA_BOTTOM_LEFT[1])/2
 
 REAL_CAR_SPEED = 40
 REAL_CAR_TURN_SPEED = 60
+
+ENVINFO_FILELOCK_PATH = BASE_DIR/"env.shm.lock"
+FEEDBACK_FILELOCK_PATH = BASE_DIR/"feedback.shm.lock"
+
+ENVINFO_SHM_NAME = "envinfo"
+ENVINFO_DTYPE = np.float32
+ENVINFO_SIZE = 5
+
+FEEDBACK_SHM_NAME = "feedback"
+FEEDBACK_DTYPE = np.float32

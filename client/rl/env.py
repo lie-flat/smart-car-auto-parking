@@ -84,7 +84,7 @@ class ParkingLotEnv(ParkingLotEnvBase):
         self.walls.append(p.loadURDF(str(ENVIRONMENT_RESOURCES_DIR/"wall.urdf"),
                                      basePosition=[0.95, 0.3, 0], baseOrientation=p.getQuaternionFromEuler([0, 0, -pi/3]), useFixedBase=10))
         # self.basePosition = [-1.5, 1.4, 0.2]
-        # self.basePosition = [-0.2, 1.4, 0.2] # 直线入库
+        # self.basePosition = [-0.5, 1.7, 0.2] # 直线入库
         # self.basePosition = [-1.5, 1.45, 0.2]  # 斜方入库1
         # self.basePosition = [TARGET_X, TARGET_Y, 0.2]
 
@@ -102,8 +102,6 @@ class ParkingLotEnv(ParkingLotEnvBase):
         # 获取当前observation
         car_ob, self.vector = self.car.get_observation()
         observation = np.array(list(car_ob))
-
-        self.step_cnt = 0
 
         return observation
 
@@ -151,11 +149,17 @@ class ParkingLotEnv(ParkingLotEnvBase):
             # print('done! collision')
             reward = -500
             self.done = True
-        if self.done:
-            self.step_cnt = 0
 
         observation = np.array(list(car_ob))
+
         info = {'is_success': self.success}
+        self.cummulative_reward += reward
+
+        def update(arr):
+            arr[:] = [action, reward, self.cummulative_reward,
+                      self.step_cnt, self.success]
+        if self.collector is not None:
+            self.collector.lock_and_modify(update)
 
         return observation, reward, self.done, info
 

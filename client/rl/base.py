@@ -9,17 +9,19 @@ from math import pi
 from abc import abstractmethod
 
 from ..config.rl import TARGET_X, TARGET_Y
-from ..controller import connect_to_board
+from .analytics import AnalyticsCollector
 
 
 class ParkingLotEnvBase(gym.Env):
     metadata = {'render.modes': ['human']}
 
-    def __init__(self, max_steps=500, init_x=-1.5, init_y=1.45, init_theta=np.pi):
+    def __init__(self, max_steps=500, init_x=-1.5, init_y=1.45, init_theta=np.pi, enable_collector=False):
         """
         初始化环境
         """
         super().__init__()
+        self.collector = AnalyticsCollector() if enable_collector else None
+
         self.loaded = False
         self.done = False
         self.goal = None
@@ -45,6 +47,7 @@ class ParkingLotEnvBase(gym.Env):
         self.action_steps = 5
         self.step_cnt = 0
         self.max_steps = max_steps
+        self.cummulative_reward = 0
 
     @abstractmethod
     def _load_env(self):
@@ -60,7 +63,8 @@ class ParkingLotEnvBase(gym.Env):
         if not self.loaded:
             self._load_env()
             self.loaded = True
-
+        self.step_cnt = 0
+        self.cummulative_reward = 0
         return None
 
     def distance_function(self, pos):
