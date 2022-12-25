@@ -4,6 +4,8 @@ from IPython import embed
 from .cmd_parser import build_parser, grab_args
 from .impl import make_env
 from time import sleep
+from math import *
+from ..config.rl import *
 
 if __name__ == '__main__':
     parser = build_parser()
