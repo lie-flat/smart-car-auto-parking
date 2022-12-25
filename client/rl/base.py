@@ -24,7 +24,7 @@ class ParkingLotEnvBase(gym.Env):
         self.done = False
         self.goal = None
         self.desired_goal = None
-        self.init_position = [init_x, init_y, 0.2]
+        self.init_position = [init_x, init_y, 0.011]
         self.init_orientation = [0, 0, init_theta]
 
         # 定义状态空间

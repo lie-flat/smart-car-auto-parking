@@ -1,7 +1,9 @@
 from math import sqrt
 import numpy as np
+import spatialmath.base as tr
 
 from .common import BASE_DIR
+from .positioning import MAP_HEIGHT, MAP_WIDTH
 
 LOG_DIR = BASE_DIR/'logs'
 
@@ -21,10 +23,10 @@ TARGET_AREA_BOTTOM_LEFT = [TARGET_AREA_TOP_LEFT[0] + 31/20/sqrt(3),
 TARGET_AREA_BOTTOM_RIGHT = [
     TARGET_AREA_BOTTOM_LEFT[0] + 24/20, TARGET_AREA_BOTTOM_LEFT[1], DRAWING_Z]
 
-TARGET_X = (TARGET_AREA_TOP_LEFT[0] + 1)
-TARGET_Y = (TARGET_AREA_TOP_LEFT[1] + TARGET_AREA_BOTTOM_LEFT[1])/2
+TARGET_X = (TARGET_AREA_TOP_LEFT[0] + 1.2)
+TARGET_Y = 0.4 * TARGET_AREA_TOP_LEFT[1] + 0.6 * TARGET_AREA_BOTTOM_LEFT[1]
 
-REAL_CAR_SPEED = 40
+REAL_CAR_SPEED = 55
 REAL_CAR_TURN_SPEED = 60
 
 ENVINFO_FILELOCK_PATH = BASE_DIR/"env.shm.lock"
@@ -36,3 +38,7 @@ ENVINFO_SIZE = 5
 
 FEEDBACK_SHM_NAME = "feedback"
 FEEDBACK_DTYPE = np.float32
+FEEDBACK_SIZE = 6
+
+REAL2SIM = tr.trotz(-90, unit="deg") @ tr.trotx(180,
+                                                unit="deg") @  tr.transl(-MAP_WIDTH/2, -MAP_HEIGHT/2, 0)
