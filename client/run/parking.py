@@ -100,7 +100,7 @@ def main():
             raise Exception("Failed to read from phone.")
         frame, rotation, translation, rotation_world, translation_world \
             = estimate_pose_and_draw(frame)
-        if translation_world is not None and context['mode'] == 'parking':
+        if translation_world is not None:
             world_tr[:3, :3] = rotation_world
             world_tr[3, 3] = 1
             # Calculate the center of aruco board
@@ -127,11 +127,12 @@ def main():
             z_rotation = np.pi - abs(np.arctan2(sim_tr[1, 0], sim_tr[0, 0]))
             z_cos_t = np.cos(z_rotation)
             z_sin_t = np.sin(z_rotation)
-            with feedback_lock:
-                # share observation via shared memory
-                feedback_arr[:2] = pos
-                feedback_arr[2:4] = velocity
-                feedback_arr[4:] = [z_cos_t, z_sin_t]
+            if context['mode'] == 'parking':
+                with feedback_lock:
+                    # share observation via shared memory
+                    feedback_arr[:2] = pos
+                    feedback_arr[2:4] = velocity
+                    feedback_arr[4:] = [z_cos_t, z_sin_t]
 
         update_rl_info(pos, velocity, z_rotation, z_cos_t, z_sin_t)
         new_frame_time = time()
