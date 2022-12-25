@@ -12,7 +12,8 @@ from .models import init_model_by_name, get_model_class_by_name
 def make_env(args):
     return gym.make(args.env, render=args.render, car_type=args.car,
                     init_x=args.init_x, init_y=args.init_y, init_theta=args.init_theta,
-                    car_scaling=args.car_scale, real=args.real, presentation_mode=args.presentation)
+                    car_scaling=args.car_scale, real=args.real, presentation_mode=args.presentation,
+                    wall=args.wall)
 
 
 def train(args):

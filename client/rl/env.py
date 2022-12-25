@@ -18,7 +18,7 @@ class ParkingLotEnv(ParkingLotEnvBase):
     metadata = {'render.modes': ['human']}
 
     def __init__(self, render=False, car_type='husky', car_scaling=1.1,
-                 max_steps=500, real=False, presentation_mode=False, init_x=-1.5, init_y=1.45, init_theta=np.pi):
+                 max_steps=500, real=False, presentation_mode=False, init_x=-1.5, init_y=1.45, init_theta=np.pi, wall=True):
         """
         初始化环境
         """
@@ -29,6 +29,7 @@ class ParkingLotEnv(ParkingLotEnvBase):
         self.presentation_mode = presentation_mode
         self.car = None
 
+        self.wall = wall
         self.walls = []
         self.ground = None
 
@@ -79,14 +80,11 @@ class ParkingLotEnv(ParkingLotEnvBase):
         p.addUserDebugLine(TARGET_AREA_TOP_RIGHT,
                            TARGET_AREA_BOTTOM_RIGHT, color, thickness)
         # Load walls
-        self.walls.append(p.loadURDF(str(ENVIRONMENT_RESOURCES_DIR/"wall.urdf"),
-                                     basePosition=[-0.3, 0.3, 0], baseOrientation=p.getQuaternionFromEuler([0, 0, -pi/3]), useFixedBase=10))
-        self.walls.append(p.loadURDF(str(ENVIRONMENT_RESOURCES_DIR/"wall.urdf"),
-                                     basePosition=[0.95, 0.3, 0], baseOrientation=p.getQuaternionFromEuler([0, 0, -pi/3]), useFixedBase=10))
-        # self.basePosition = [-1.5, 1.4, 0.2]
-        # self.basePosition = [-0.5, 1.7, 0.2] # 直线入库
-        # self.basePosition = [-1.5, 1.45, 0.2]  # 斜方入库1
-        # self.basePosition = [TARGET_X, TARGET_Y, 0.2]
+        if self.wall:
+            self.walls.append(p.loadURDF(str(ENVIRONMENT_RESOURCES_DIR/"wall.urdf"),
+                                        basePosition=[-0.3, 0.3, 0], baseOrientation=p.getQuaternionFromEuler([0, 0, -pi/3]), useFixedBase=10))
+            self.walls.append(p.loadURDF(str(ENVIRONMENT_RESOURCES_DIR/"wall.urdf"),
+                                        basePosition=[0.95, 0.3, 0], baseOrientation=p.getQuaternionFromEuler([0, 0, -pi/3]), useFixedBase=10))
 
         self.car = Car(self.client, base_position=self.init_position, base_orientation_euler=self.init_orientation,
                        car_type=self.car_type, scale=self.car_scaling, action_steps=self.action_steps, real_car_ip=self.real_car_ip)

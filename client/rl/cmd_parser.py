@@ -35,6 +35,8 @@ def build_parser(f=lambda _: None):
                         help='initial theta, python expression evaluation is supported')
     parser.add_argument('--real', type=bool, default=False,
                         help='Real world or not', action=argparse.BooleanOptionalAction)
+    parser.add_argument('--wall', type=bool, default=True,
+                        help='Add walls or not', action=argparse.BooleanOptionalAction)
     parser.add_argument('--eval-episodes', type=int,
                         default=int(10), help='total episodes to eval')
     f(parser)
