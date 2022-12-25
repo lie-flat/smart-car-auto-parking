@@ -11,3 +11,4 @@ pybullet
 gym==0.21.0
 filelock~=3.8.2
 spatialmath-python~=1.0.3
+ipython
