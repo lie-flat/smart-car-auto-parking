@@ -23,7 +23,8 @@ class ParkingLotEnv(ParkingLotEnvBase):
         初始化环境
         """
         super().__init__(max_steps=max_steps, init_x=init_x,
-                         init_y=init_y, init_theta=init_theta, enable_collector=presentation_mode)
+                         init_y=init_y, init_theta=init_theta, enable_collector=presentation_mode,
+                         epsilon=0.2 if real else 0.15)
         self.car_type = car_type
         self.car_scaling = car_scaling
         self.presentation_mode = presentation_mode
@@ -82,9 +83,9 @@ class ParkingLotEnv(ParkingLotEnvBase):
         # Load walls
         if self.wall:
             self.walls.append(p.loadURDF(str(ENVIRONMENT_RESOURCES_DIR/"wall.urdf"),
-                                        basePosition=[-0.3, 0.3, 0], baseOrientation=p.getQuaternionFromEuler([0, 0, -pi/3]), useFixedBase=10))
+                                         basePosition=[-0.3, 0.3, 0], baseOrientation=p.getQuaternionFromEuler([0, 0, -pi/3]), useFixedBase=10))
             self.walls.append(p.loadURDF(str(ENVIRONMENT_RESOURCES_DIR/"wall.urdf"),
-                                        basePosition=[0.95, 0.3, 0], baseOrientation=p.getQuaternionFromEuler([0, 0, -pi/3]), useFixedBase=10))
+                                         basePosition=[0.95, 0.3, 0], baseOrientation=p.getQuaternionFromEuler([0, 0, -pi/3]), useFixedBase=10))
 
         self.car = Car(self.client, base_position=self.init_position, base_orientation_euler=self.init_orientation,
                        car_type=self.car_type, scale=self.car_scaling, action_steps=self.action_steps, real_car_ip=self.real_car_ip)
@@ -130,7 +131,7 @@ class ParkingLotEnv(ParkingLotEnvBase):
         self.done = False
         self.success = False
 
-        if distance < 0.15:
+        if distance < self.epsilon:
             print("Success")
             self.success = True
             self.done = True
@@ -155,7 +156,7 @@ class ParkingLotEnv(ParkingLotEnvBase):
 
         def update(arr):
             arr[:] = [action, reward, self.cummulative_reward,
-                      self.step_cnt, self.success]
+                      self.step_cnt, self.success, distance]
         if self.collector is not None:
             self.collector.lock_and_modify(update)
 

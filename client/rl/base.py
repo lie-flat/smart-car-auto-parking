@@ -13,7 +13,7 @@ from .analytics import AnalyticsCollector
 class ParkingLotEnvBase(gym.Env):
     metadata = {'render.modes': ['human']}
 
-    def __init__(self, max_steps=500, init_x=-1.5, init_y=1.45, init_theta=np.pi, enable_collector=False):
+    def __init__(self, max_steps=500, init_x=-1.5, init_y=1.45, init_theta=np.pi, enable_collector=False, epsilon=0.2):
         """
         初始化环境
         """
@@ -24,6 +24,7 @@ class ParkingLotEnvBase(gym.Env):
         self.done = False
         self.goal = None
         self.desired_goal = None
+        self.epsilon = epsilon
         self.init_position = [init_x, init_y, 0.011]
         self.init_orientation = [0, 0, init_theta]
 

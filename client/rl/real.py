@@ -73,7 +73,7 @@ class RealParkingLotEnv(ParkingLotEnvBase):
         self.done = False
         self.success = False
 
-        if distance < 0.15:
+        if distance < self.epsilon:
             print("Success")
             self.success = True
             self.done = True
