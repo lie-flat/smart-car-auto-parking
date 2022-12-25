@@ -39,8 +39,8 @@ def train(args):
     env.close()
 
 
-def evaluate(args):
-    env = Monitor(make_env(args))
+def evaluate(args, env_maker=make_env):
+    env = Monitor(env_maker(args))
     model_class = get_model_class_by_name(args.model)
 
     path = Path(args.model_path)
