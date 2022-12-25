@@ -34,7 +34,7 @@ FEEDBACK_FILELOCK_PATH = BASE_DIR/"feedback.shm.lock"
 
 ENVINFO_SHM_NAME = "envinfo"
 ENVINFO_DTYPE = np.float32
-ENVINFO_SIZE = 5
+ENVINFO_SIZE = 6
 
 FEEDBACK_SHM_NAME = "feedback"
 FEEDBACK_DTYPE = np.float32

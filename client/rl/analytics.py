@@ -21,9 +21,6 @@ class AnalyticsCollector:
         with self.lock:
             f(self.array)
 
-    def __del__(self):
-        self.shm.close()
-
 
 class AnalyticsReader:
     def __init__(self) -> None:
@@ -40,3 +37,4 @@ class AnalyticsReader:
             out_dict["cummulative_reward"] = self.array[2]
             out_dict["step_counter"] = int(self.array[3])
             out_dict["success"] = int(self.array[4]) == 1
+            out_dict["distance"] = self.array[5]
