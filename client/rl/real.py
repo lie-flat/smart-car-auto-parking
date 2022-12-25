@@ -2,7 +2,10 @@ import numpy as np
 from functools import partial
 from filelock import FileLock
 from multiprocessing.shared_memory import SharedMemory
+import gym
 
+from .cmd_parser import build_parser, grab_args
+from .impl import evaluate
 from .base import ParkingLotEnvBase
 from ..config import BASE_DIR
 from ..controller import connect_to_board, act, control
@@ -87,8 +90,18 @@ class RealParkingLotEnv(ParkingLotEnvBase):
 
         def update(arr):
             arr[:] = [action, reward, self.cummulative_reward,
-                      self.step_cnt, self.success]
-        if self.collector is not None:
-            self.collector.lock_and_modify(update)
+                      self.step_cnt, self.success, distance]
+        self.collector.lock_and_modify(update)
 
         return observation, reward, self.done, info
+
+
+def make_env(args):
+    return gym.make(args.env)
+
+
+if __name__ == "__main__":
+    parser = build_parser()
+    args = grab_args(parser)
+    args.env = 'RealParkingLot-v0'
+    evaluate(args, env_maker=make_env)
