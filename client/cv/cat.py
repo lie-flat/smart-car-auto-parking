@@ -6,7 +6,7 @@ from PIL import ImageDraw, Image
 
 from ..camera.phone import PHONE_CAM_WIDTH, PHONE_CAM_HEIGHT
 from ..camera.camera import CAR_CAM_WIDTH, CAR_CAM_HEIGHT
-from ..config import MAP_LEN_Y, MAP_LEN_X, CHINESE_FONT, MAP_FACTOR, CAR_HEIGHT, CAR_WIDTH
+from ..config import context, MAP_LEN_Y, MAP_LEN_X, CHINESE_FONT, MAP_FACTOR, CAR_HEIGHT, CAR_WIDTH
 
 VIDEO_WIDTH = 1920
 VIDEO_HEIGHT = 1080
@@ -35,8 +35,15 @@ draw.text((10, -3),  "求个 Star, 谢谢喵~: https://github.com/lie-flat/smart
           font=CHINESE_FONT, fill=(0xFF, 0x90, 0x1E))
 draw.text((1260, -3),  "非常感谢得意黑 SmileySans 这款开源字体",
           font=CHINESE_FONT, fill=(0x75, 0x7A, 0x0B))
-draw.text((10, 45),  "*: 因为 ESP32 CAM 网络延迟问题，小车摄像头的画面有时会有不确定的延迟（一般在 1s 左右）",
-          font=CHINESE_FONT, fill=(0x4B, 0x4B, 0xE5))
+if context['mode'] == 'run':
+    draw.text((10, 45),  "*: 因为 ESP32 CAM 网络延迟问题，小车摄像头的画面有时会有不确定的延迟（一般在 1s 左右）",
+              font=CHINESE_FONT, fill=(0x4B, 0x4B, 0xE5))
+elif context['mode'] == 'parking-follow':
+    draw.text((10, 45),  "自动泊车 -- 数字孪生模式[实体小车跟随虚拟场景小车运动，强化学习模型不使用定位数据]",
+              font=CHINESE_FONT, fill=(0x4B, 0x4B, 0xE5))
+elif context['mode'] == 'parking':
+    draw.text((10, 45),  "自动泊车 -- 完全部署模式[强化学习模型直接根据定位数据运行，无需虚拟场景]",
+              font=CHINESE_FONT, fill=(0x4B, 0x4B, 0xE5))
 draw.text((1500, 45),  "山东大学（威海）,数科班",
           font=CHINESE_FONT, fill=(0xC5, 0xFF, 0x00))
 TEXT_AREA = np.array(img_pil)
