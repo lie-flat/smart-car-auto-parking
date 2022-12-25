@@ -2,7 +2,7 @@ import numpy as np
 import cv2 as cv
 
 OFFSET_X = 0.536
-OFFSET_Y = 0.56
+OFFSET_Y = 0.537
 OFFSET_Z = -1.06
 
 TRANS = np.array([[1, 0, 0, OFFSET_X], [0, 1, 0, OFFSET_Y],
@@ -16,6 +16,8 @@ ROTATION = np.array([
     [0, 0, 1]
 ], dtype="float32")
 
+MAP_HEIGHT = 1.015
+MAP_WIDTH = 1.210
 
 MAP_LEN_X = int(1015 / 2)
 MAP_LEN_Y = int(1210 / 2)

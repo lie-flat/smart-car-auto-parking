@@ -51,7 +51,7 @@ ARUCO_TEST_BOARD_PADDING = 10 / 100
 ARUCO_TEST_BOARD_Z = 0
 ARUCO_TEST_BOARD_SIZE = (5, 4)
 ARUCO_TEST_BOARD_IDS = np.array([721, 960, 518, 942, 469, 909, 357, 700, 859, 639, 758, 593, 609, 274, 692,
-                                967, 278, 307, 699, 472], dtype="float32")  
+                                967, 278, 307, 699, 472], dtype="float32")
 # ARUCO_TEST_BOARD_IDS = np.array([1008, 92, 410, 35]*ARUCO_TEST_BOARD_SIZE[0])
 
 
@@ -87,3 +87,6 @@ FINAL_BOARD = cv.aruco.GridBoard_create(
     markerLength=0.025,
     markerSeparation=0.01,
     dictionary=FINAL_BOARD_DICT)
+
+FINAL_BOARD_WIDTH = 0.025 * 4 + 0.01 * 3
+FINAL_BOARD_HEIGHT = 0.025 * 5 + 0.01 * 4
