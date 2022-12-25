@@ -40,5 +40,7 @@ FEEDBACK_SHM_NAME = "feedback"
 FEEDBACK_DTYPE = np.float32
 FEEDBACK_SIZE = 6
 
-REAL2SIM = tr.trotz(-90, unit="deg") @ tr.trotx(180,
-                                                unit="deg") @  tr.transl(-MAP_WIDTH/2, -MAP_HEIGHT/2, 0)
+REAL2SIM = tr.transl(MAP_WIDTH/2, MAP_HEIGHT/2,
+                     0) @ tr.trotx(180, unit='deg') @ tr.trotz(90, unit="deg")
+
+SIM_SCALE = 5
