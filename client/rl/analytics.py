@@ -40,6 +40,3 @@ class AnalyticsReader:
             out_dict["cummulative_reward"] = self.array[2]
             out_dict["step_counter"] = int(self.array[3])
             out_dict["success"] = int(self.array[4]) == 1
-
-    def __del__(self):
-        self.shm.unlink()
