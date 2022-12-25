@@ -77,6 +77,7 @@ class RealParkingLotEnv(ParkingLotEnvBase):
             print("Success")
             self.success = True
             self.done = True
+            self.act(7.5)
 
         self.step_cnt += 1
         if self.step_cnt > self.max_steps:  # 限制episode长度为step_threshold

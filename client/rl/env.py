@@ -36,7 +36,7 @@ class ParkingLotEnv(ParkingLotEnvBase):
 
         if render:
             self.client = p.connect(
-                p.GUI, options='--width=640 --height=480' if presentation_mode else '')
+                p.GUI, options='--width=640 --height=420' if presentation_mode else '')
             # Disable default controls
             p.configureDebugVisualizer(p.COV_ENABLE_GUI, 0)
             p.resetDebugVisualizerCamera(
@@ -89,6 +89,8 @@ class ParkingLotEnv(ParkingLotEnvBase):
 
         self.car = Car(self.client, base_position=self.init_position, base_orientation_euler=self.init_orientation,
                        car_type=self.car_type, scale=self.car_scaling, action_steps=self.action_steps, real_car_ip=self.real_car_ip)
+        if self.presentation_mode:
+            input("Press <ENTER> to begin!")
 
     def reset(self):
         """
@@ -135,6 +137,8 @@ class ParkingLotEnv(ParkingLotEnvBase):
             print("Success")
             self.success = True
             self.done = True
+            if self.real_car_ip is not None:
+                self.car.real_act(7.5)
 
         self.step_cnt += 1
         if self.step_cnt > self.max_steps:  # 限制episode长度为step_threshold
