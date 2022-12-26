@@ -1,9 +1,9 @@
 import numpy as np
 import cv2 as cv
 
-OFFSET_X = 0.536
-OFFSET_Y = 0.537
-OFFSET_Z = -1.06
+OFFSET_X = 0.52
+OFFSET_Y = 0.578
+OFFSET_Z = -1.05
 
 TRANS = np.array([[1, 0, 0, OFFSET_X], [0, 1, 0, OFFSET_Y],
                  [0, 0, 1, OFFSET_Z], [0, 0, 0, 1]])
@@ -26,6 +26,4 @@ MAP_FACTOR = 1e3 / 2
 CAR_WIDTH = 0.15
 CAR_HEIGHT = 0.23
 CAR_DIAG = (CAR_WIDTH ** 2 + CAR_HEIGHT**2)**0.5
-# CAR_DIAG_ANGLE = atan2(CAR_HEIGHT, CAR_WIDTH)
-# sina = sin(CAR_DIAG_ANGLE)
-# cosa = cos(CAR_DIAG_ANGLE)
+
