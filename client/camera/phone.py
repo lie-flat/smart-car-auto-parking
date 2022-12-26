@@ -1,19 +1,25 @@
 from ..config import IS_RASPBERRYPI
 import numpy as np
 import cv2 as cv
-from ..config import IS_RASPBERRYPI, ip
+from ..config import IS_RASPBERRYPI, ip, PHONE_CAM_MODE, IRIUN_CAM_ID
 
 PHONE_CAM_WIDTH = 640
 PHONE_CAM_HEIGHT = 480
 
+
 def get_phone_video():
     global ip
-    if IS_RASPBERRYPI:
-        return cv.VideoCapture(0)
-    else:
-        if ip is None:
-            ip = input("IP address of your phone: ")
-        return cv.VideoCapture(f"http://{ip}:4747/video?640x480")
+    match (PHONE_CAM_MODE, IS_RASPBERRYPI):
+        case (_, True):
+            return cv.VideoCapture(0)
+        case ('droidcam', False):
+            if ip is None:
+                ip = input("IP address of your phone: ")
+            return cv.VideoCapture(f"http://{ip}:4747/video?640x480")
+        case ('iriun', False):
+            return cv.VideoCapture(IRIUN_CAM_ID)
+        case _:
+            raise NotImplementedError
 
 
 if IS_RASPBERRYPI:

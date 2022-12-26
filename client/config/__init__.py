@@ -1,5 +1,5 @@
 from .boarddef import *
-from .platform import IS_RASPBERRYPI, ip
+from .platform import *
 from .positioning import *
 from .resources import *
 from .aruco import *
