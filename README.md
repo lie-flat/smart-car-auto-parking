@@ -35,6 +35,8 @@ mamba activate cv
 pip install -r client/requirements.txt
 ```
 
+后面的操作都假设你处于此 Mamba 环境中
+
 ### Android 手机配置
 
 我们需要使用如下软件将安卓手机变成 Web Cam: [DroidCam](https://www.dev47apps.com/)。
@@ -79,9 +81,83 @@ Android 手机和 Linux 电脑需要在同一个局域网内，请把你的手�
 
 再根据从地图上作的标记，量出相机坐标系与世界坐标系的偏移量（Z 偏移量为摄像头高度），填入 `OFFSET_{X,Y,Z}` 常量中。
 
-# 讲解
+
+## 运行
+
+电脑连接到开发板的热点，同时保证手机和电脑处在同一局域网。
+
+### 第一阶段实时位姿测定的展示(先后启动两个 Python 程序)
+
+```bash
+python -m client.run
+python -m client
+```
+
+### 第二阶段强化学习自动泊车
+
+#### 训练强化学习模型
+
+运行如下命令可以查看训练脚本的使用帮助。
+
+```bash
+python -m client.rl.train -h
+```
+
+示例
+
+```bash
+python -m client.rl.train --model dqn --total-steps 3000000 --init-x=1.5 --init-y=2 --init-theta="np.pi/6" --no-wall --seed=114514
+```
+
+#### 评估强化学习模型
+
+运行如下命令可以查看评估脚本的使用帮助。
+
+```bash
+python -m client.rl.train -h
+```
+
+示例：
+
+```bash
+python -m client.rl.eval --model-path resources/self-parking-nn/dqn_1_1500000.zip  --eval-episodes 10 --render 
+```
+
+#### 部署强化学习模型
+
+我们提供两种部署模式。
+
+- 在数字孪生模式下，我们仍然依赖于 PyBullet 虚拟场景的数据来运行模型，
+即没有使用位姿测定得到的数据来运行模型，
+真实的小车只是简单的跟随虚拟的小车一起做出同步的运动。
+
+- 在真实部署模式下，我们直接把位姿测定得到的数据传递给模型，
+不再依赖 pybullet 虚拟场景，完成本次大作业的最终目标。
+
+##### 数字孪生模式
+
+先后运行以下两个 Python 脚本
+
+```bash
+python -m client.run.parking --follow
+python -m client.rl.eval --eval-episodes 1 --model-path 模型路径 \ 
+    --init-x=起始X --init-y=起始Y --init-theta=起始theta \
+    --render --real --presentation
+```
+
+##### 真实部署模式
+
+先后运行以下两个 Python 脚本
+
+```bash
+python -m client.run.parking
+python -m client.rl.real --model-path 模型路径 --eval-episodes 1
+```
+
+## 讲解
 
 您可以看 B 站视频。若您像 kxxt 一样更 prefer 文字版的讲解，也可以看 slides 目录下的讲解幻灯片。
+
 
 # Reference
 
@@ -95,4 +171,4 @@ Android 手机和 Linux 电脑需要在同一个局域网内，请把你的手�
 - https://github.com/Robotics-Club-IIT-BHU/gym-carpark
 - https://github.com/VanIseghemThomas/AI-Parking-Unity
 - https://docs.google.com/document/d/10sXEhzFRSnvFcl3XxNGhnD4N2SedqwdAvK3dsihxVUA/edit#heading=h.gpdptdmpokh
--
+
