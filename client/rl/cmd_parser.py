@@ -18,7 +18,7 @@ def build_parser(f=lambda _: None):
     parser.add_argument('--presentation', type=bool, default=False,
                         help='presentation mode.', action=argparse.BooleanOptionalAction)
     parser.add_argument('--seed', type=int, default=0,
-                        help='random seed (default: 0)')
+                        help='seed for RNG')
     parser.add_argument('--log-dir', type=str,
                         default='', help='log dir')
     parser.add_argument('--model-path', type=str,
