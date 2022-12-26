@@ -1433,7 +1433,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &6432754862898571007
 Transform:
   m_ObjectHideFlags: 0
@@ -1771,7 +1771,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &7730855744529644217
 Transform:
   m_ObjectHideFlags: 0
@@ -2670,6 +2670,26 @@ PrefabInstance:
       propertyPath: Target
       value: 
       objectReference: {fileID: 4466226309013806990}
+    - target: {fileID: 2670713232568921034, guid: 83faa9f86db11a55fbf01c316759bc6f, type: 3}
+      propertyPath: DecisionPeriod
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 2670713232568921034, guid: 83faa9f86db11a55fbf01c316759bc6f, type: 3}
+      propertyPath: TakeActionsBetweenDecisions
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2670713232568921035, guid: 83faa9f86db11a55fbf01c316759bc6f, type: 3}
+      propertyPath: m_BrainParameters.VectorActionSize.Array.size
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2670713232568921035, guid: 83faa9f86db11a55fbf01c316759bc6f, type: 3}
+      propertyPath: m_BrainParameters.m_ActionSpec.BranchSizes.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2670713232568921035, guid: 83faa9f86db11a55fbf01c316759bc6f, type: 3}
+      propertyPath: m_BrainParameters.m_ActionSpec.BranchSizes.Array.data[0]
+      value: 2
+      objectReference: {fileID: 0}
     - target: {fileID: 5685598131405103172, guid: 83faa9f86db11a55fbf01c316759bc6f, type: 3}
       propertyPath: m_RootOrder
       value: 0

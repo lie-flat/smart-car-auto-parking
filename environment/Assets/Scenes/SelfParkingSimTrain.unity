@@ -519,7 +519,7 @@ PrefabInstance:
       objectReference: {fileID: 120212217}
     - target: {fileID: 36962734, guid: 2d640a13c005faedba174e76ea76bae3, type: 3}
       propertyPath: m_VersionIndex
-      value: 1618
+      value: 1630
       objectReference: {fileID: 0}
     - target: {fileID: 128430825, guid: 2d640a13c005faedba174e76ea76bae3, type: 3}
       propertyPath: m_Mesh
@@ -535,7 +535,7 @@ PrefabInstance:
       objectReference: {fileID: 741085815}
     - target: {fileID: 128430829, guid: 2d640a13c005faedba174e76ea76bae3, type: 3}
       propertyPath: m_VersionIndex
-      value: 1949
+      value: 1961
       objectReference: {fileID: 0}
     - target: {fileID: 1789970265, guid: 2d640a13c005faedba174e76ea76bae3, type: 3}
       propertyPath: m_Mesh
@@ -551,7 +551,7 @@ PrefabInstance:
       objectReference: {fileID: 88518785}
     - target: {fileID: 1789970269, guid: 2d640a13c005faedba174e76ea76bae3, type: 3}
       propertyPath: m_VersionIndex
-      value: 1194
+      value: 1206
       objectReference: {fileID: 0}
     - target: {fileID: 1804862430, guid: 2d640a13c005faedba174e76ea76bae3, type: 3}
       propertyPath: m_Mesh
@@ -567,7 +567,7 @@ PrefabInstance:
       objectReference: {fileID: 874826669}
     - target: {fileID: 1804862434, guid: 2d640a13c005faedba174e76ea76bae3, type: 3}
       propertyPath: m_VersionIndex
-      value: 1846
+      value: 1858
       objectReference: {fileID: 0}
     - target: {fileID: 4466226308102993484, guid: 2d640a13c005faedba174e76ea76bae3, type: 3}
       propertyPath: m_WheelDampingRate
@@ -595,7 +595,7 @@ PrefabInstance:
       objectReference: {fileID: 1636573778}
     - target: {fileID: 4466226309013806979, guid: 2d640a13c005faedba174e76ea76bae3, type: 3}
       propertyPath: m_VersionIndex
-      value: 520
+      value: 532
       objectReference: {fileID: 0}
     - target: {fileID: 4466226309013806991, guid: 2d640a13c005faedba174e76ea76bae3, type: 3}
       propertyPath: m_Mesh
@@ -669,13 +669,21 @@ PrefabInstance:
       propertyPath: m_BrainParameters.VectorObservationSize
       value: 9
       objectReference: {fileID: 0}
+    - target: {fileID: 6200387697655879779, guid: 2d640a13c005faedba174e76ea76bae3, type: 3}
+      propertyPath: startX
+      value: -0.252
+      objectReference: {fileID: 0}
+    - target: {fileID: 6200387697655879779, guid: 2d640a13c005faedba174e76ea76bae3, type: 3}
+      propertyPath: startZ
+      value: 0.267
+      objectReference: {fileID: 0}
     - target: {fileID: 6272813164974539184, guid: 2d640a13c005faedba174e76ea76bae3, type: 3}
       propertyPath: m_Mesh
       value: 
       objectReference: {fileID: 2037594950}
     - target: {fileID: 6272813164974539184, guid: 2d640a13c005faedba174e76ea76bae3, type: 3}
       propertyPath: m_VersionIndex
-      value: 64
+      value: 70
       objectReference: {fileID: 0}
     - target: {fileID: 8114554894136441560, guid: 2d640a13c005faedba174e76ea76bae3, type: 3}
       propertyPath: m_Mesh
@@ -687,7 +695,7 @@ PrefabInstance:
       objectReference: {fileID: 204508263}
     - target: {fileID: 8188390993203350251, guid: 2d640a13c005faedba174e76ea76bae3, type: 3}
       propertyPath: m_VersionIndex
-      value: 493
+      value: 499
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 2d640a13c005faedba174e76ea76bae3, type: 3}
@@ -702,7 +710,7 @@ Mesh:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: pb_Mesh-6210
+  m_Name: pb_Mesh-1392
   serializedVersion: 10
   m_SubMeshes:
   - serializedVersion: 2
@@ -1442,7 +1450,7 @@ Mesh:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: pb_Mesh-3022
+  m_Name: pb_Mesh-1378
   serializedVersion: 10
   m_SubMeshes:
   - serializedVersion: 2
