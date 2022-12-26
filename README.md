@@ -2,14 +2,19 @@
 
 20 级数科班 2022-2023 年秋冬季大作业
 
-第一阶段成果：基于 ArUco Marker Board 的小车实时位姿测定和可视化（单目）
-
 前置作业：https://github.com/lie-flat/smart-car-deep-learning
+
+- 第一阶段成果：基于 ArUco Marker Board 的小车实时位姿测定和可视化（单目）
+- 第二阶段成果：基于强化学习方法的自动泊车
 
 B 站视频展示和讲解：
 
 - 单目位姿测定与追踪： https://www.bilibili.com/video/BV1N24y1y7Zt/
 - 强化学习自动泊车： TODO
+
+开源代码：
+
+https://github.com/lie-flat/smart-car-auto-parking
 
 ## 环境搭建
 
@@ -168,6 +173,8 @@ python -m client.rl.eval --model-path resources/self-parking-nn/dqn_1_1500000.zi
 
 ![render](resources/images/render.gif)
 
+脚本最后会输出 Mean Cummulative Reward 和标准差。
+
 #### 部署强化学习模型
 
 我们提供两种部署模式。
@@ -176,8 +183,12 @@ python -m client.rl.eval --model-path resources/self-parking-nn/dqn_1_1500000.zi
   即没有使用位姿测定得到的数据来运行模型，
   真实的小车只是简单的跟随虚拟的小车一起做出同步的运动。
 
-- 在真实部署模式下，我们直接把位姿测定得到的数据传递给模型，
+- 在完全部署模式下，我们直接把位姿测定得到的数据传递给模型，
   不再依赖 pybullet 虚拟场景，完成本次大作业的最终目标。
+
+经过多次实验，我们发现真实部署模式比数字孪生模式效果更好，这可能虚拟场景和真实场景的差异造成的。
+
+另外，虽然真实小车的动作的定义与虚拟小车有所不同，我们发现在完全部署模式下，我们的模型仍然能够达到很好的效果。
 
 ##### 数字孪生模式
 
@@ -198,6 +209,21 @@ python -m client.rl.eval --eval-episodes 1 --model-path 模型路径 \
 python -m client.run.parking
 python -m client.rl.real --model-path 模型路径 --eval-episodes 1
 ```
+
+## Unity 3D 场景
+
+为了更好的还原真实的场景，我们一开始使用 Unity 3D 架设了场景，组建了小车的虚拟模型，
+并使用 Unity3D 提供的 ml-agents 训练了强化学习模型。
+
+但是由于无法准确的得知小车轮胎的部分物理参数，
+Unity 3D ml-agents 官方也不支持将训练得到的模型部署到 Python 脚本中去，
+我们最后放弃了这个计划，转而使用 pybullet + gym + stable_baseline3。
+
+Unity3D 工程的代码在 environment 文件夹下。
+
+![u3d](resources/images/u3d.png)
+
+
 
 ## 讲解
 
