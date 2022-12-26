@@ -71,6 +71,8 @@ background: bg.jpg
 
 ## 数字孪生模式
 
+### 因为忘记切换展示模式了，视频下方显示的是完全部署模式，其实是数字孪生模式
+
 ---
 layout: cover
 background: bg.jpg
