@@ -37,7 +37,12 @@ pip install -r client/requirements.txt
 
 后面的操作都假设你处于此 Mamba 环境中
 
-### Android 手机配置
+### 手机配置
+
+由于新版安卓在锁屏时会禁用相机，我们需要让安卓手机保持解锁状态。
+你可以使用 Wakey 这款软件来做到这一点，部分手机自带了这一功能（比如笔者正在使用的 Lineage OS 19）。
+
+#### 第一阶段
 
 我们需要使用如下软件将安卓手机变成 Web Cam: [DroidCam](https://www.dev47apps.com/)。
 
@@ -47,9 +52,21 @@ pip install -r client/requirements.txt
 我写过一篇博客, 讲解如何使用 DroidCam 作为 OpenCV 的视频源： [kxxt 的博客](https://www.kxxt.dev/blog/use-android-devices-as-cameras-in-opencv/)
 
 Android 手机和 Linux 电脑需要在同一个局域网内，请把你的手机 IP 填入 `client/config/platform.py` 中的指定位置。
+并将 `PHONE_CAM_MODE` 设置为 `droidcam`
 
-由于新版安卓在锁屏时会禁用相机，我们需要让安卓手机保持解锁状态。
-你可以使用 Wakey 这款软件来做到这一点，部分手机自带了这一功能（比如笔者正在使用的 Lineage OS 19）。
+#### 第二阶段
+
+由于 DroidCam 延迟比较高，无法满足我们的自动泊车任务的需求。我们换用 iriun + 有线连接的方式。
+
+在你的手机和电脑上安装 [iriun](https://iriun.com/) 这款软件。
+
+手机上打开 iriun, 将分辨率调节为 640x480. 手机与电脑使用 USB 有线连接。
+电脑端打开 iriun, 手机端允许 ADB 调试请求，即可成功连接。
+
+然后将 `client/config/platform.py` 中的 `PHONE_CAM_MODE` 设置为 `iriun`,
+`IRIUN_CAM_ID` 设置为 iriun 摄像头的编号。
+
+#### 相机校正
 
 你需要打印一张棋盘格纸进行相机的校正。 相机校正比较基础，不展开讲解。
 你可以使用 `client.run.calibration_collector` 这个脚本来收集矫正图片。
@@ -70,9 +87,13 @@ Android 手机和 Linux 电脑需要在同一个局域网内，请把你的手�
 ![top](resources/images/car-top.jpg)
 ![front](resources/images/car-front.jpg)
 
+根据小车的实际情况，调整 `client/config/rl.py` 中小车的电机控制值 `REAL_CAR_SPEED` 和 `REAL_CAR_TURN_SPEED`。
+
 ### 场景配置
 
 地图平铺，调整支架，保证手机摄像头水平且能拍到整张地图。
+
+<img src="resources/images/setup.jpg" alt="" width="50%">
 
 然后运行 `python -m client.run.cam`， 在显示的图片中所示的圆圈的对应实体地图位置做一个标记。
 
@@ -80,7 +101,6 @@ Android 手机和 Linux 电脑需要在同一个局域网内，请把你的手�
 填到 `client/config/positioning.py` 的 `ROTATION` 常量里。
 
 再根据从地图上作的标记，量出相机坐标系与世界坐标系的偏移量（Z 偏移量为摄像头高度），填入 `OFFSET_{X,Y,Z}` 常量中。
-
 
 ## 运行
 
@@ -94,6 +114,21 @@ python -m client
 ```
 
 ### 第二阶段强化学习自动泊车
+
+#### 强化学习虚拟场景调试
+
+我们提供一个交互式的环境，它可以用来进行虚拟场景的调试。
+
+```bash
+python -m client.rl.heuristic
+```
+
+脚本启动后，你将得到一个 pybullet 窗口和一个 IPython shell.
+
+![heuristic](resources/images/heuristic.png)
+
+你可以在 IPython shell 中自由的执行你想要执行的代码，
+进行虚拟场景的调试。要想知道这个 shell 提供了哪些全局变量和函数，请阅读它的源代码。
 
 #### 训练强化学习模型
 
@@ -109,6 +144,14 @@ python -m client.rl.train -h
 python -m client.rl.train --model dqn --total-steps 3000000 --init-x=1.5 --init-y=2 --init-theta="np.pi/6" --no-wall --seed=114514
 ```
 
+你可以启动 tensorboard 来查看训练的情况：
+
+```bash
+tensorboard --logdir logs
+```
+
+<img src="resources/images/tensorboard.png" alt="tensorboard">
+
 #### 评估强化学习模型
 
 运行如下命令可以查看评估脚本的使用帮助。
@@ -120,19 +163,21 @@ python -m client.rl.train -h
 示例：
 
 ```bash
-python -m client.rl.eval --model-path resources/self-parking-nn/dqn_1_1500000.zip  --eval-episodes 10 --render 
+python -m client.rl.eval --model-path resources/self-parking-nn/dqn_1_1500000.zip  --eval-episodes 10 --render
 ```
+
+![render](resources/images/render.gif)
 
 #### 部署强化学习模型
 
 我们提供两种部署模式。
 
 - 在数字孪生模式下，我们仍然依赖于 PyBullet 虚拟场景的数据来运行模型，
-即没有使用位姿测定得到的数据来运行模型，
-真实的小车只是简单的跟随虚拟的小车一起做出同步的运动。
+  即没有使用位姿测定得到的数据来运行模型，
+  真实的小车只是简单的跟随虚拟的小车一起做出同步的运动。
 
 - 在真实部署模式下，我们直接把位姿测定得到的数据传递给模型，
-不再依赖 pybullet 虚拟场景，完成本次大作业的最终目标。
+  不再依赖 pybullet 虚拟场景，完成本次大作业的最终目标。
 
 ##### 数字孪生模式
 
@@ -140,7 +185,7 @@ python -m client.rl.eval --model-path resources/self-parking-nn/dqn_1_1500000.zi
 
 ```bash
 python -m client.run.parking --follow
-python -m client.rl.eval --eval-episodes 1 --model-path 模型路径 \ 
+python -m client.rl.eval --eval-episodes 1 --model-path 模型路径 \
     --init-x=起始X --init-y=起始Y --init-theta=起始theta \
     --render --real --presentation
 ```
@@ -158,7 +203,6 @@ python -m client.rl.real --model-path 模型路径 --eval-episodes 1
 
 您可以看 B 站视频。若您像 kxxt 一样更 prefer 文字版的讲解，也可以看 slides 目录下的讲解幻灯片。
 
-
 # Reference
 
 - https://markhedleyjones.com/projects/calibration-checkerboard-collection
@@ -171,4 +215,3 @@ python -m client.rl.real --model-path 模型路径 --eval-episodes 1
 - https://github.com/Robotics-Club-IIT-BHU/gym-carpark
 - https://github.com/VanIseghemThomas/AI-Parking-Unity
 - https://docs.google.com/document/d/10sXEhzFRSnvFcl3XxNGhnD4N2SedqwdAvK3dsihxVUA/edit#heading=h.gpdptdmpokh
-
