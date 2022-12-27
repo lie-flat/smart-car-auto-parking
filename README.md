@@ -16,6 +16,15 @@ B 站视频展示和讲解：
 
 https://github.com/lie-flat/smart-car-auto-parking
 
+## 效果展示
+
+您可以前往 B 站查看更清晰的版本。您也可以在 [`resources/videos` 这个目录下](resources/videos)下载原始视频文件。
+
+| <img src="resources/videos/1.0-full.gif"><br />直线倒车入库<br />完全部署模式                           | <video src="resources/videos/1.0-sim.gif"><br />直线倒车入库<br />数字孪生模式          |
+| ------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| <img src="resources/videos/2.120-full.gif"><br />斜后方 120 度倒车入库<br />完全部署模式                | <img src="resources/videos/2.120-sim.gif"><br />斜后方 120 度倒车入库<br />数字孪生模式 |
+| <img src="resources/videos/2.120-full2.gif"><br />斜后方 120 度倒车入库<br />完全部署模式（另一次录制） | <img src="resources/videos/3.90-full.gif"><br />斜后方 90 度倒车入库<br />完全部署模式  |
+
 ## 环境搭建
 
 ### 软件环境搭建
@@ -91,7 +100,7 @@ Android 手机和 Linux 电脑需要在同一个局域网内，请把你的手�
 将以下设置写入 `device.cache.json`。
 
 ```json
-{"board": "192.168.4.1", "esp32-cam": "192.168.4.2"}
+{ "board": "192.168.4.1", "esp32-cam": "192.168.4.2" }
 ```
 
 我们对小车进行了一定的物理改装，来让我们能在顶部平整的粘贴一张 ArUco Marker Board.
@@ -294,7 +303,7 @@ void setup() {
 }
 ```
 
-然后，我们在 `loop` 里处理请求,  解析出请求参数，调用 `act` 函数，待运动完成后，再给客户端返回 200。
+然后，我们在 `loop` 里处理请求, 解析出请求参数，调用 `act` 函数，待运动完成后，再给客户端返回 200。
 
 ```c++
 void loop() {
@@ -326,6 +335,7 @@ void act(float servo, float motor_a, float motor_b, int duration) {
 ```
 
 然后，配套地，我们有如下的 python 库代码(`client/controller/control.py`):
+
 ```python
 def act(ip, servo=7.5, a=0, b=0, duration=0):
     body = {
@@ -416,9 +426,9 @@ register(id='RealParkingLot-v0', entry_point='client.rl.real:RealParkingLotEnv')
 
 `client/rl/cmd_parser.py` 定义了公共的命令行参数解析器。
 
-我们在 `client/rl/models.py`  中对各种模型做了一个抽象，使得我们能够方便的通过命令行参数来切换模型。
+我们在 `client/rl/models.py` 中对各种模型做了一个抽象，使得我们能够方便的通过命令行参数来切换模型。
 
-模型训练和评估的主要代码在 `client/rl/impl.py`  中。
+模型训练和评估的主要代码在 `client/rl/impl.py` 中。
 
 模型训练：
 
