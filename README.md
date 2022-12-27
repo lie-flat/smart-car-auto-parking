@@ -527,3 +527,10 @@ class AnalyticsReader:
 - https://github.com/Robotics-Club-IIT-BHU/gym-carpark
 - https://github.com/VanIseghemThomas/AI-Parking-Unity
 - https://docs.google.com/document/d/10sXEhzFRSnvFcl3XxNGhnD4N2SedqwdAvK3dsihxVUA/edit#heading=h.gpdptdmpokh
+- https://petercorke.github.io/spatialmath-python/
+- https://docs.python.org/3/library/multiprocessing.shared_memory.html
+- https://stable-baselines3.readthedocs.io/en/master/
+- https://www.gymlibrary.dev/content/environment_creation/
+- https://unity-technologies.github.io/ml-agents/ML-Agents-Toolkit-Documentation/
+- https://docs.python.org/3/library/argparse.html
+- https://github.com/me-no-dev/ESPAsyncWebServer
