@@ -2,7 +2,8 @@ name: Deploy pages
 on:
   push:
     paths:
-      - "slides"
+      - "slides/**"
+  workflow_dispatch:
 jobs:
   deploy:
     runs-on: ubuntu-latest
