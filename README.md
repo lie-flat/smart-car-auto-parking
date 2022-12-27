@@ -238,6 +238,25 @@ Unity3D 工程的代码在 environment 文件夹下。
 
 ## 代码讲解
 
+目录结构
+
+```
+smart-car-auto-parking
+├── client              # Python 客户端， 位姿测定，强化学习自动泊车
+├── devices.cache.json  # 设备缓存文件
+├── environment         # Unity 3D 工程
+├── environment.lock    # mamba 环境配置文件(版本锁定)
+├── environment.yml     # mamba 环境配置文件
+├── firmware            # C++ 编写的小车/ESP32CAM 固件
+├── logs                # Tensorboard 日志文件夹/模型检查点保存
+├── measurements        # 手动测量得到的部分参数
+├── LICENSE             # 开源协议
+├── README.md           # 说明文件
+├── resources           # 资源文件夹
+├── roadsign            # 交通标志识别模型
+└── slides              # 幻灯片
+```
+
 ### 第一阶段：实时位姿测定与直播推流
 
 您可以查看 [B 站讲解视频](https://www.bilibili.com/video/BV1N24y1y7Zt/) 或讲解幻灯片：
@@ -329,10 +348,10 @@ def act(ip, servo=7.5, a=0, b=0, duration=0):
 - common.py：公共设置
 - control.py：关键运行模式控制和上下文定义
 - misc.py： 杂项
-- platform.py：平台相关配置，
-- positioning.py
-- resources.py
-- rl.py
+- platform.py：平台相关配置，摄像头运行模式配置
+- positioning.py：位姿测定配置
+- resources.py：资源配置
+- rl.py：强化学习配置
 
 #### 强化学习环境
 
