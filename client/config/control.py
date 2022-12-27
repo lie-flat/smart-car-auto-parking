@@ -1,4 +1,4 @@
-MOTION = False
+MOTION = True
 SIGNDET = True
 
 RECORDER = None  # "video"
