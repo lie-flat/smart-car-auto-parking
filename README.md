@@ -20,9 +20,9 @@ https://github.com/lie-flat/smart-car-auto-parking
 
 您可以前往 B 站查看更清晰的版本。您也可以在 [`resources/videos` 这个目录下](resources/videos)下载原始视频文件。
 
-| <img src="resources/videos/1.0-full.gif"><br />直线倒车入库<br />完全部署模式                           | <video src="resources/videos/1.0-sim.gif"><br />直线倒车入库<br />数字孪生模式          |
+| <img src="resources/videos/1.0-full.gif"><br />直线倒车入库<br />完全部署模式                           | <img src="resources/videos/1.0-sim.gif"><br />直线倒车入库<br />数字孪生模式          |
 | ------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
-| <img src="resources/videos/2.120-full.gif"><br />斜后方 120 度倒车入库<br />完全部署模式                | <img src="resources/videos/2.120-sim.gif"><br />斜后方 120 度倒车入库<br />数字孪生模式 |
+| <img src="resources/videos/2.120-full.gif"><br />斜后方 120 度倒车入库<br />完全部署模式                | <img src="resources/videos/2.120-sim.gif"><br />斜后方 120 度倒车入库<br />数字孪生模式(因为忘记切换展示模式，所以显示的是完全部署模式) |
 | <img src="resources/videos/2.120-full2.gif"><br />斜后方 120 度倒车入库<br />完全部署模式（另一次录制） | <img src="resources/videos/3.90-full.gif"><br />斜后方 90 度倒车入库<br />完全部署模式  |
 
 ## 环境搭建
