@@ -1,0 +1,25 @@
+name: park
+channels:
+  - conda-forge
+  - defaults
+  - https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud/Paddle/
+dependencies:
+  - python==3.10
+  - pytorch
+  - pybullet
+  - pygame
+  - requests
+  - pillow
+  - PyYAML
+  - numpy
+  - ipython
+  - colorama
+  - filelock
+  - gym==0.21.0
+  - opencv~=4.6.0
+  - spatialmath-python~=1.0.3
+  - paddlepaddle-gpu
+  - pip
+  - pip:
+      - stable-baselines3==1.6.2
+      - gym==0.21.0
