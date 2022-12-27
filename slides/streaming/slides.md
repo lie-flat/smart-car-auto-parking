@@ -90,7 +90,7 @@ layout: two-cols
 # 整体网络架构
 这混乱邪恶的网络架构
 
-<img src="network.svg" alt="" style="height: 400px;">
+<img src="/network.svg" alt="" style="height: 400px;">
 
 ::right::
 
