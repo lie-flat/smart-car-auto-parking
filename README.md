@@ -10,7 +10,7 @@
 B 站视频展示和讲解：
 
 - 单目位姿测定与追踪： https://www.bilibili.com/video/BV1N24y1y7Zt/
-- 强化学习自动泊车： TODO
+- 强化学习自动泊车： https://www.bilibili.com/video/BV1C84y1W7zS/
 
 开源代码：
 
