@@ -83,8 +83,8 @@ Android 手机和 Linux 电脑需要在同一个局域网内，请把你的手�
 #### 相机校正
 
 你需要打印一张棋盘格纸进行相机的校正。 相机校正比较基础，不展开讲解。
-你可以使用 `client.run.calibration_collector` 这个脚本来收集矫正图片。
-然后，你可以运行 `client.run.calibration` 来获得校正参数。
+你可以使用 `client.run.calibration_collector` 这个脚本来收集矫正图片， 若当前拍摄图像中能标定到棋盘格，该脚本就会保存该图像。
+然后，你可以运行 `client.run.calibration` 来获得校正参数。（也可以使用 ZhangZhengyou Method, 参考网上代码）
 
 在完成相机校正后，你需要将获得的数据填入 `client/camera/phone.py` 的 `CAMERA_MAT` 和 `DIST_COEFFS` 两个常量中去。
 
@@ -269,10 +269,256 @@ smart-car-auto-parking
 
 ### 第一阶段：实时位姿测定与直播推流
 
-您可以查看 [B 站讲解视频](https://www.bilibili.com/video/BV1N24y1y7Zt/) 或讲解幻灯片：
+您也可以查看 [B 站讲解视频](https://www.bilibili.com/video/BV1N24y1y7Zt/) 或讲解幻灯片：
 
 - [位姿测定](https://lie-flat.github.io/smart-car-auto-parking/positioning)
 - [直播推流](https://lie-flat.github.io/smart-car-auto-parking/streaming)
+
+#### 位姿测定
+
+我们使用的 ArUco Board 定义在 `client/config/boarddef.py` 中：
+
+```python
+FINAL_BOARD_DICT = cv.aruco.getPredefinedDictionary(cv.aruco.DICT_4X4_50)
+FINAL_BOARD = cv.aruco.GridBoard_create(
+    markersX=5,
+    markersY=4,
+    markerLength=0.025,
+    markerSeparation=0.01,
+    dictionary=FINAL_BOARD_DICT)
+
+FINAL_BOARD_WIDTH = 0.025 * 4 + 0.01 * 3
+FINAL_BOARD_HEIGHT = 0.025 * 5 + 0.01 * 4
+```
+
+一共五行四列，每个 Marker 边长 2.5 cm, Marker 间距为 1cm。
+
+ArUco 位姿测定的实现在 `client/cv/aruco.py` 中：
+
+我们首先调用 aruco 模块的 `detectMarkers` 检测出图像上的所有 ArUco marker, 为了保证位姿测定的稳定性，我们只在检测出来的 Marker 数量不少于 4 个的时候才去计算 ArUco Board 的位姿。
+
+我们通过调用 `aruco.estimatePoseBoard` 函数来计算 ArUco Board 在相机坐标系的位姿，然后，通过我们自己计算和测量得到的 `ROTATION` 矩阵和 `TRANSLATION` 向量，我们把相机坐标系的坐标转换到世界坐标系。
+
+同时这个函数还会画出 ArUco Marker 和板子的位姿。
+
+```python
+import cv2.aruco as aruco
+# 常量的引入略
+def estimate_pose_and_draw(frame):
+    corners, ids, _rejected_points = aruco.detectMarkers(frame, dic)
+    rotation_world = None
+    rotation = None
+    translation = None
+    translation_world = None
+    if ids is not None and len(ids) >= 4:
+        aruco.drawDetectedMarkers(frame, corners, ids)
+        if DETECT_BOARD:
+            valid_cnt, rotation, translation = aruco.estimatePoseBoard(
+                corners, ids, BOARD, CAMERA_MAT, DIST_COEFFS, None, None)
+            if valid_cnt > 0:
+                # 画出板子的位姿（用一个坐标系来表示）
+                cv.drawFrameAxes(frame, CAMERA_MAT, DIST_COEFFS, rotation, translation, 0.08, 6)
+            rotation_camera, _ = cv.Rodrigues(rotation)
+            rotation_world = ROTATION @ rotation_camera
+            translation_world = ROTATION @ translation + TRANSLATION.reshape(3, 1)
+    return frame, rotation, translation, rotation_world, translation_world
+```
+
+#### 直播推流
+
+画面的拼接实现在 `client/cv/cat.py` 中：
+
+首先，我们初始化各个绘图区，绘制底部固定文字。（因为 cv.putText 不支持中文字符，所以我们在这里使用 Pillow 来绘制文字）
+
+下面的代码忽略了部分常量/变量的定义。
+
+```python
+video_buffer = np.ones((VIDEO_HEIGHT, VIDEO_WIDTH, 3),
+                       dtype=np.uint8) * 255
+SEPARATOR = np.ones((SEPARATOR_HEIGHT, SEPARATOR_WIDTH, 3),
+                    dtype=np.uint8) * 50
+info_area = np.ones(
+    (INFO_AREA_HEIGHT, INFO_AREA_WIDTH, 3), dtype=np.uint8) * 255
+TEXT_AREA = np.ones((TEXT_AREA_HEIGHT, TEXT_AREA_WIDTH, 3),
+                    dtype=np.uint8) * 255
+img_pil = Image.fromarray(TEXT_AREA)
+draw = ImageDraw.Draw(img_pil)
+draw.text((10, -3),  "求个 Star, 谢谢喵~: https://github.com/lie-flat/smart-car-auto-parking",
+          font=CHINESE_FONT, fill=(0xFF, 0x90, 0x1E))
+draw.text((1260, -3),  "非常感谢得意黑 SmileySans 这款开源字体",
+          font=CHINESE_FONT, fill=(0x75, 0x7A, 0x0B))
+if context['mode'] == 'run':
+    draw.text((10, 45),  "*: 因为 ESP32 CAM 网络延迟问题，小车摄像头的画面有时会有不确定的延迟（一般在 1s 左右）",
+              font=CHINESE_FONT, fill=(0x4B, 0x4B, 0xE5))
+elif context['mode'] == 'parking-follow':
+    draw.text((10, 45),  "自动泊车 -- 数字孪生模式[实体小车跟随虚拟场景小车运动，强化学习模型不使用定位数据]",
+              font=CHINESE_FONT, fill=(0x4B, 0x4B, 0xE5))
+elif context['mode'] == 'parking':
+    draw.text((10, 45),  "自动泊车 -- 完全部署模式[强化学习模型直接根据定位数据运行，无需虚拟场景]",
+              font=CHINESE_FONT, fill=(0x4B, 0x4B, 0xE5))
+draw.text((1500, 45),  "山东大学（威海）,数科班",
+          font=CHINESE_FONT, fill=(0xC5, 0xFF, 0x00))
+TEXT_AREA = np.array(img_pil)
+video_buffer[-TEXT_AREA_HEIGHT:, :] = TEXT_AREA
+PLACEHOLDER = np.array([np.NaN, np.NaN, np.NaN])
+traj = 255 * np.ones((MAP_LEN_X, MAP_LEN_Y, 3), dtype="uint8")
+visual = 255 * np.ones((MAP_LEN_X, MAP_LEN_Y, 3), dtype="uint8")
+
+def null_coalesce(val, fallback):
+    return val if val is not None else fallback
+```
+
+然后，我们定义 `cat` 函数，它的作用是把各个画面整合到一起，和一些文字信息一同显示在 1920x1080 尺寸的全屏窗口上：
+
+```python
+def cat(phone_cam, road_mask, road_perspective, world_trans, world_rot, cam_trans, cam_rot, fps):
+    """
+            640           640               640
+         +------------+-------------+-------------------+
+      4  | marker det | road mask   | road(perspective) |
+      8  | i:480x640  | i:240x320   | i:240x320x1       |
+      0  | 480x640    | 480x640     | 480x640           |
+         +------------+-+------------+-+----------------+
+      5  | trajectory |S|rect visual |S|info display    |
+      0  | i: 507x605 |1|i: 507x605  |1|xyz             |
+      7  | o: 507x605 |0|o: 507x605  |0|rotation:       |
+         +------------+-+------------+-+-----------------+
+      93 | text                                         |
+         +----------------------------------------------+
+    """
+    函数体参见下面讲解
+```
+
+首先，清空信息展示区和位姿可视化区，转换输入图像的色彩空间，进行缩放，处理此帧没有定到位姿的情况，显示 NaN。
+
+```python
+global p0x, p1x, p2x, p3x, p0y, p1y, p2y, p3y, traj, visual
+info_area.fill(255)
+visual.fill(255)
+# Resize inputs
+
+road_mask = cv.resize(road_mask, (PHONE_CAM_WIDTH, PHONE_CAM_HEIGHT))
+if road_perspective.shape != (480, 640, 3):
+    # Not in RL Mode.
+    road_perspective = cv.cvtColor(road_perspective, cv.COLOR_GRAY2BGR)
+    road_perspective = cv.resize(
+        road_perspective, (PHONE_CAM_WIDTH, PHONE_CAM_HEIGHT))
+    # Null coalescing
+    world_trans = null_coalesce(world_trans, PLACEHOLDER)
+    cam_trans = null_coalesce(cam_trans, PLACEHOLDER)
+    cam_rot = null_coalesce(cam_rot, PLACEHOLDER)
+```
+
+若测定出了位姿, 计算小车的中心点的世界坐标，在可视化区画出表示位姿的矩形, 注意我们要先擦除掉上一帧中绘制的那个矩形。同时在轨迹图上画一个点。
+
+```python
+# Calc rect center
+# cos t -sin t
+# sin t  cos t
+if world_rot is not None:
+    cv.line(visual, (p0x, p0y), (p1x, p1y), WHITE, RECT_BORDER_THICKNESS)
+    cv.line(visual, (p0x, p0y), (p3x, p3y), WHITE, RECT_BORDER_THICKNESS)
+    cv.line(visual, (p1x, p1y), (p2x, p2y), WHITE, RECT_BORDER_THICKNESS)
+    cv.line(visual, (p3x, p3y), (p2x, p2y), WHITE, RECT_BORDER_THICKNESS)
+    # Then other components isn't None as well
+    cost = world_rot[0, 0]
+    sint = world_rot[1, 0]
+
+    p0x = world_trans[1].item()
+    p0y = world_trans[0].item()
+    p1x = int((p0x + CAR_WIDTH * cost) * MAP_FACTOR)
+    p1y = int((p0y - CAR_WIDTH * sint) * MAP_FACTOR)
+    p3x = int((p0x + CAR_HEIGHT * sint) * MAP_FACTOR)
+    p3y = int((p0y + CAR_HEIGHT * cost) * MAP_FACTOR)
+    p0x = int(MAP_FACTOR*p0x)
+    p0y = int(MAP_FACTOR*p0y)
+    deltax = p1x - p0x
+    deltay = p1y - p0y
+    p2x = p3x + deltax
+    p2y = p3y + deltay
+    cv.line(visual, (p0x, p0y), (p1x, p1y),
+            (0, 255, 0), RECT_BORDER_THICKNESS)
+    cv.line(visual, (p0x, p0y), (p3x, p3y),
+            (0, 0, 255), RECT_BORDER_THICKNESS)
+    cv.line(visual, (p1x, p1y), (p2x, p2y),
+            (255, 0, 0), RECT_BORDER_THICKNESS)
+    cv.line(visual, (p3x, p3y), (p2x, p2y),
+            (0, 0, 0), RECT_BORDER_THICKNESS)
+    pos = (int((p0x + p2x)/2), int((p0y+p2y)/2))
+
+    visual = cv.circle(visual, pos, 4, (0x6E, 0x00, 0xFF), 4)
+    # Convert mats to vecs
+    world_rot, _ = cv.Rodrigues(world_rot)
+    traj = cv.circle(traj, pos, 4, (0x6E, 0x00, 0xFF), 6)
+else:
+    world_rot = PLACEHOLDER
+```
+
+然后绘制数据显示区的文字，包括摄像机坐标系的位置，旋转以及世界坐标系的位置和旋转，还有实时帧率：
+
+```python
+# get numbers from vecs
+world_x = world_trans[0].item()
+world_y = world_trans[1].item()
+world_z = world_trans[2].item()
+cam_x = cam_trans[0].item()
+cam_y = cam_trans[1].item()
+cam_z = cam_trans[2].item()
+cam_rx = cam_rot[0].item()
+cam_ry = cam_rot[1].item()
+cam_rz = cam_rot[2].item()
+world_rx = world_rot[0].item()
+world_ry = world_rot[1].item()
+world_rz = world_rot[2].item()
+cv.putText(info_area,  f"World X : {world_x:.8}", (10, 40),
+           CV_FONT, FONT_SCALE, CV_COLOR, FONT_LINE_WIDTH, cv.LINE_AA)
+cv.putText(info_area,  f"World Y : {world_y:.8}", (10, 80),
+           CV_FONT, FONT_SCALE, CV_COLOR, FONT_LINE_WIDTH, cv.LINE_AA)
+cv.putText(info_area,  f"World Z : {world_z:.8}", (10, 120),
+           CV_FONT, FONT_SCALE, CV_COLOR, FONT_LINE_WIDTH, cv.LINE_AA)
+cv.putText(info_area,  f"World RX: {world_rx:.8}", (10, 160),
+           CV_FONT, FONT_SCALE, CV_COLOR, FONT_LINE_WIDTH, cv.LINE_AA)
+cv.putText(info_area,  f"World RY: {world_ry:.8}", (10, 200),
+           CV_FONT, FONT_SCALE, CV_COLOR, FONT_LINE_WIDTH, cv.LINE_AA)
+cv.putText(info_area,  f"World RZ: {world_rz:.8}", (10, 240),
+           CV_FONT, FONT_SCALE, CV_COLOR, FONT_LINE_WIDTH, cv.LINE_AA)
+cv.putText(info_area,  f"Cam  X : {cam_x:.8}", (10, 280),
+           CV_FONT, FONT_SCALE, CV_COLOR, FONT_LINE_WIDTH, cv.LINE_AA)
+cv.putText(info_area,  f"Cam  Y : {cam_y:.8}", (10, 320),
+           CV_FONT, FONT_SCALE, CV_COLOR, FONT_LINE_WIDTH, cv.LINE_AA)
+cv.putText(info_area,  f"Cam  Z : {cam_z:.8}", (10, 360),
+           CV_FONT, FONT_SCALE, CV_COLOR, FONT_LINE_WIDTH, cv.LINE_AA)
+cv.putText(info_area,  f"Cam  RX: {cam_rx:.8}", (10, 400),
+           CV_FONT, FONT_SCALE, CV_COLOR, FONT_LINE_WIDTH, cv.LINE_AA)
+cv.putText(info_area,  f"Cam  RY: {cam_ry:.8}", (10, 440),
+           CV_FONT, FONT_SCALE, CV_COLOR, FONT_LINE_WIDTH, cv.LINE_AA)
+cv.putText(info_area,  f"Cam  RZ: {cam_rz:.8}", (10, 480),
+           CV_FONT, FONT_SCALE, CV_COLOR, FONT_LINE_WIDTH, cv.LINE_AA)
+cv.putText(info_area,  "FPS", (550, 40),
+           CV_FONT, FONT_SCALE, (0, 255, 0), FONT_LINE_WIDTH, cv.LINE_AA)
+cv.putText(info_area,  f"{fps:.2f}", (550, 80),
+           CV_FONT, FONT_SCALE, (0, 255, 0), FONT_LINE_WIDTH, cv.LINE_AA)
+```
+
+然后拼接视频画面并返回结果：
+
+```python
+video_buffer[:PHONE_CAM_HEIGHT, :PHONE_CAM_WIDTH] = cv.flip(phone_cam, 1)
+video_buffer[:PHONE_CAM_HEIGHT,
+             PHONE_CAM_WIDTH:2 * PHONE_CAM_WIDTH] = road_mask
+video_buffer[:PHONE_CAM_HEIGHT, 2*PHONE_CAM_WIDTH:] = road_perspective
+video_buffer[PHONE_CAM_HEIGHT:PHONE_CAM_HEIGHT +
+             MAP_LEN_X, :MAP_LEN_Y] = traj
+video_buffer[PHONE_CAM_HEIGHT:PHONE_CAM_HEIGHT +
+             MAP_LEN_X, MAP_LEN_Y:MAP_LEN_Y + SEPARATOR_WIDTH] = SEPARATOR
+video_buffer[PHONE_CAM_HEIGHT:PHONE_CAM_HEIGHT +
+             MAP_LEN_X, MAP_LEN_Y + SEPARATOR_WIDTH: MAP_LEN_Y + SEPARATOR_WIDTH + MAP_LEN_Y] = visual
+video_buffer[PHONE_CAM_HEIGHT:PHONE_CAM_HEIGHT +
+             MAP_LEN_X, MAP_LEN_Y + SEPARATOR_WIDTH + MAP_LEN_Y: MAP_LEN_Y + SEPARATOR_WIDTH + MAP_LEN_Y + SEPARATOR_WIDTH] = SEPARATOR
+video_buffer[PHONE_CAM_HEIGHT:PHONE_CAM_HEIGHT + MAP_LEN_X,
+             MAP_LEN_Y + SEPARATOR_WIDTH + MAP_LEN_Y + SEPARATOR_WIDTH:] = info_area
+return video_buffer
+```
 
 ### 第二阶段：强化学习自动泊车
 
@@ -423,15 +669,63 @@ register(id='RealParkingLot-v0', entry_point='client.rl.real:RealParkingLotEnv')
 
 小车相关的代码在 `client/rl/car.py` 中，`Car` 类负责了虚拟/真实小车的控制，pybullet 环境小车加载和观测数据收集等功能。
 
+为了方便从命令行参数创建环境，我们编写了以下函数(在 `client/rl/impl.py` 中)：
+
+```python
+def make_env(args):
+    return gym.make(args.env, render=args.render, car_type=args.car,
+                    init_x=args.init_x, init_y=args.init_y, init_theta=args.init_theta,
+                    car_scaling=args.car_scale, real=args.real, presentation_mode=args.presentation,
+                    wall=args.wall)
+```
+
 #### 模型训练/评估
 
 `client/rl/cmd_parser.py` 定义了公共的命令行参数解析器。
 
-我们在 `client/rl/models.py` 中对各种模型做了一个抽象，使得我们能够方便的通过命令行参数来切换模型。
+我们在 `client/rl/models.py` 中对各种模型做了一个抽象，使得我们能够方便的通过命令行参数来切换模型:
+
+获得模型类：
+
+```python
+def get_model_class_by_name(name):
+    match name:
+        case 'dqn':
+            return DQN
+        case 'ppo':
+            return PPO
+        case _:
+            raise ValueError(f"Invalid model {name}!")
+```
+
+获得自定义模型构造器:
+
+```python
+def get_model_ctor_by_name(name):
+    match name:
+        case 'dqn':
+            return partial(DQN,  exploration_fraction=0.3,
+                           exploration_initial_eps=1.0,
+                           exploration_final_eps=0.05,)
+        case 'ppo':
+            return PPO
+        case _:
+            raise ValueError(f"Invalid model {name}!")
+```
+
+初始化模型:
+
+```python
+def init_model_by_name(name, **kwargs):
+    model_class = get_model_ctor_by_name(name)
+    return model_class('MlpPolicy', **kwargs)
+```
 
 模型训练和评估的主要代码在 `client/rl/impl.py` 中。
 
 模型训练：
+
+创建环境，如果命令行参数指定了恢复模型的路径，那么加载要恢复训练的模型，否则就初始化一个新模型。最后，重置环境，开始训练。训练结束后保存模型。
 
 ```python
 def train(args):
@@ -479,7 +773,131 @@ def evaluate(args, env_maker=make_env):
 
 效果展示的脚本位于 `client/run/parking.py`. 出于性能因素考虑，我们没有将效果展示和自动泊车写到一个程序里，我们把它们分到了两个程序中并行运行。
 
-`client/run/parking.py` 实时地测定小车的位置和姿态，并且通过位姿变换把数据变换成观测数据，同时可视化到屏幕上。同时，它通过共享内存的方式读取自动泊车的相关信息，一并显示在屏幕上。在完全部署模式下，该脚本还会把观测数据通过共享内存的方式传递回自动泊车脚本。代码太长了，我就不贴了。
+`client/run/parking.py` 实时地测定小车的位置和姿态，并且通过位姿变换把数据变换成观测数据，同时可视化到屏幕上。同时，它通过共享内存的方式读取自动泊车的相关信息，一并显示在屏幕上。在完全部署模式下，该脚本还会把观测数据通过共享内存的方式传递回自动泊车脚本。
+
+首先，我们定义一些数组形式的绘图区域，初始化数据收集器，初始化反馈信息所需要的共享内存及文件锁。
+
+```python
+img_result = np.zeros(IMG_RESULT_SHAPE, dtype=np.uint8)
+rl_info_area = np.zeros((480, 640, 3), dtype=np.uint8)
+
+analytics_reader = AnalyticsReader()
+analytics = {}
+
+draw_rl_info_with_color = partial(cv.putText, rl_info_area, fontFace=CV_FONT, fontScale=FONT_SCALE,
+                                  thickness=FONT_LINE_WIDTH, lineType=cv.LINE_AA)
+draw_rl_info = partial(draw_rl_info_with_color, color=CV_COLOR)
+
+feedback_shm = create_shared_memory_nparray(np.zeros(
+    FEEDBACK_SIZE, dtype=FEEDBACK_DTYPE), FEEDBACK_SHM_NAME, FEEDBACK_DTYPE)
+feedback_arr = np.ndarray(
+    FEEDBACK_SIZE, dtype=FEEDBACK_DTYPE, buffer=feedback_shm.buf)
+feedback_lock = FileLock(FEEDBACK_FILELOCK_PATH)
+```
+
+然后我们定义更新强化学习数据显示的函数：
+
+```python
+def update_rl_info(pos, velocity, z_rotation, z_cos_t, z_sin_t):
+    analytics_reader.read_to_dict(analytics)
+    rl_info_area.fill(255)
+    draw_rl_info(text=f"  Last Action  : {analytics['last_action']}", org=(10, 35))
+    draw_rl_info(text=f"  Last Reward : {analytics['last_reward']}", org=(10, 70))
+    draw_rl_info(text=f" Cum Reward  : {analytics['cummulative_reward']}", org=(10, 105))
+    draw_rl_info(text=f" Step  Counter : {analytics['step_counter']}", org=(10, 140))
+    draw_rl_info(text=f" Distance  : {analytics['distance']}", org=(10, 175))
+    draw_rl_info_with_color(text=f"    > Observation Data <", org=(10, 210), color=(255,255,0))
+    draw_rl_info(text=f"  X Pos   : {pos[0]:.8f}", org=(10, 245))
+    draw_rl_info(text=f"  Y Pos   : {pos[1]:.8f}", org=(10, 280))
+    draw_rl_info(text=f"X Velocity : {velocity[0]:.8f}", org=(10, 315))
+    draw_rl_info(text=f"Y Velocity : {velocity[1]:.8f}", org=(10, 350))
+    draw_rl_info(text=f"Z Rotation: {z_rotation:.8f}", org=(10, 385))
+    draw_rl_info(text=f"Cos(Rz)={z_cos_t:.8f}", org=(10, 430))
+    draw_rl_info(text=f"Sin(Rz)={z_sin_t:.8f}", org=(10, 470))
+```
+
+在 `main` 函数中，我们先初始化各种数据（比如上一次位姿测定时间，存储从世界坐标变换后的仿真中的位姿矩阵的变量，z 方向的旋转，世界坐标系位姿，速度等等），拉起全屏窗口。
+
+```python
+global img_result, rl_info_area, last_pos, feedback_lock, feedback_arr
+last_pos_measure_time = None
+sim_tr = np.eye(4, dtype=np.float32)
+pos = np.array([np.nan, np.nan])
+z_rotation = np.nan
+z_sin_t = np.nan
+z_cos_t = np.nan
+velocity = np.array([np.nan, np.nan])
+world_tr = np.ndarray((4, 4), dtype=np.float32)
+world_tr[3, :] = [0, 0, 0, 1]
+cv.namedWindow("frame", cv.WINDOW_NORMAL)
+cv.setWindowProperty("frame", cv.WND_PROP_FULLSCREEN, cv.WINDOW_FULLSCREEN)
+```
+
+然后连接到手机摄像头获取图像, 定义几个用来计算 FPS 的变量:
+
+```python
+vid = get_phone_video()
+# used to record the time when we processed last frame
+prev_frame_time = 0
+# used to record the time at which we processed current frame
+new_frame_time = 0
+```
+
+接下来是主循环：
+
+在主循环中，我们先计算小车的位置和姿态，如果该帧中可以计算得出小车的位姿，我们就再将世界坐标系的位姿变换到强化学习环境坐标系（平移+旋转+拉伸 共三个变换），然后计算小车的速度(在强化学习的环境坐标系中)， z 方向旋转的正弦和余弦等强化学习模型需要的数据。如果在完全部署模式下，我们给反馈信息共享内存加锁并将计算得到的数据写入反馈信息数组中，这样就把数据反馈给了强化学习模型所在的进程。然后，更新显示的数据和画面。
+
+```python
+while True:
+    ret, frame = vid.read()
+    if not ret:
+        raise Exception("Failed to read from phone.")
+        frame, rotation, translation, rotation_world, translation_world \
+        = estimate_pose_and_draw(frame)
+        if translation_world is not None:
+            world_tr[:3, :3] = rotation_world
+            world_tr[3, 3] = 1
+            # Calculate the center of aruco board
+            cost = rotation_world[0, 0]
+            sint = rotation_world[1, 0]
+            p0x = translation_world[1].item()
+            p0y = translation_world[0].item()
+            p1x = p0x + FINAL_BOARD_WIDTH * cost
+            p1y = p0y - FINAL_BOARD_WIDTH * sint
+            p3x = p0x + FINAL_BOARD_HEIGHT * sint
+            p3y = p0y + FINAL_BOARD_HEIGHT * cost
+            center_x = (p1x + p3x)/2
+            center_y = (p1y + p3y)/2
+            world_tr[:2, 3] = [center_y, center_x]  # This is not a mistake
+            last_pos = pos
+            sim_tr = REAL2SIM @ world_tr
+            time_now = time()
+            if last_pos_measure_time is None:
+                last_pos_measure_time = time()
+                delta_t = time_now - last_pos_measure_time
+                pos = SIM_SCALE * sim_tr[:2, 3]
+                velocity = (pos - last_pos) / delta_t
+                last_pos_measure_time = time_now
+                z_rotation = np.pi - abs(np.arctan2(sim_tr[1, 0], sim_tr[0, 0]))
+                z_cos_t = np.cos(z_rotation)
+                z_sin_t = np.sin(z_rotation)
+                if context['mode'] == 'parking':
+                    with feedback_lock:
+                        # share observation via shared memory
+                        feedback_arr[:2] = pos
+                        feedback_arr[2:4] = velocity
+                        feedback_arr[4:] = [z_cos_t, z_sin_t]
+
+            update_rl_info(pos, velocity, z_rotation, z_cos_t, z_sin_t)
+            new_frame_time = time()
+            fps = 1/(new_frame_time-prev_frame_time)
+            prev_frame_time = new_frame_time
+            all_concat = cat(frame, img_result, rl_info_area, translation_world,
+                             rotation_world, translation, rotation, fps)
+            cv.imshow("frame", all_concat)
+            if cv.waitKey(1) & 0xFF == ord('q'):
+                break
+```
 
 `client/rl/analytics.py` 封装了收集自动泊车信息的类 `AnalyticsCollector/AnalyticsReader`:
 
