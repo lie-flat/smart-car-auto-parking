@@ -16,17 +16,17 @@ jobs:
         working-directory: ./slides/positioning
         run: |
           yarn install
-          yarn build -o ../../dist/positioning
+          yarn build -o ../../dist/positioning --base /positioning
       - name: Install & Build Parking
         working-directory: ./slides/parking
         run: |
           yarn install
-          yarn build -o ../../dist/parking
+          yarn build -o ../../dist/parking --base /parking
       - name: Install & Build streaming
         working-directory: ./slides/streaming
         run: |
           yarn install
-          yarn build -o ../../dist/streaming
+          yarn build -o ../../dist/streaming --base /streaming
       - name: Deploy pages
         uses: crazy-max/ghaction-github-pages@v2
         with:
