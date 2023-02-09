@@ -2,6 +2,8 @@
 
 20 级数科班 2022-2023 年秋冬季大作业
 
+综述 PDF：[语义分割和强化学习在自动驾驶中的应用](语义分割和强化学习在自动驾驶中的应用综述.pdf)
+
 前置作业：https://github.com/lie-flat/smart-car-deep-learning
 
 - 第一阶段成果：基于 ArUco Marker Board 的小车实时位姿测定和可视化（单目）
